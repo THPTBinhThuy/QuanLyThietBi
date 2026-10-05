@@ -52,43 +52,46 @@
       </div>
     </div>
 
-    <!-- Tab 2: Mượn TB -->
+  <!-- Tab 2: Đăng Ký Mượn Thiết Bị -->
     <div id="muon-tb" class="tab-content">
       <h3>ĐĂNG KÝ MƯỢN THIẾT BỊ DẠY HỌC</h3>
       <form id="formMuonTB" class="app-form">
         <label>Tên Giáo viên mượn:</label>
         <input type="text" id="gvThietBi" required placeholder="Họ và tên giáo viên">
+        
         <label>Mã Thiết bị:</label>
         <select id="maTB" required>
-            <option value="">Đang tải danh sách thiết bị...</option>
+            <option value="">-- Đang tải danh sách thiết bị... --</option>
         </select>
+        
         <label>Ngày mượn thực hành:</label>
         <input type="date" id="ngayMuonTB" required>
+        
         <button type="button" onclick="guiYeuCau('muonThietBi')">Xác Nhận Mượn</button>
       </form>
     </div>
 
-    <!-- Tab 3: Mượn Phòng -->
+    <!-- Tab 3: Đăng Ký Phòng Bộ Môn -->
     <div id="muon-phong" class="tab-content">
       <h3>ĐĂNG KÝ SỬ DỤNG PHÒNG BỘ MÔN</h3>
       <form id="formMuonPhong" class="app-form">
         <label>Tên Giáo viên sử dụng:</label>
         <input type="text" id="gvPhong" required placeholder="Họ và tên giáo viên">
+        
         <label>Phòng chức năng:</label>
-        <select id="maPhong">
-         <label>Phòng chức năng:</label>
         <select id="maPhong" required>
-            <option value="">Đang tải danh sách phòng...</option>
+            <option value="">-- Đang tải danh sách phòng... --</option>
         </select>
+        
         <label>Ngày đăng ký dùng:</label>
         <input type="date" id="ngayDatPhong" required>
-
+        
         <label>Buổi học:</label>
         <select id="buoiHoc">
-          <option value="Buổi Sáng">Buổi Sáng</option>
-          <option value="Buổi Chiều">Buổi Chiều</option>
+          <option value="Sáng">Buổi Sáng</option>
+          <option value="Chiều">Buổi Chiều</option>
         </select>
-
+        
         <label>Tiết học trong ngày:</label>
         <input type="text" id="tietHoc" required placeholder="Ví dụ: 1-2 hoặc 4">
         
