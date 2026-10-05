@@ -59,7 +59,9 @@
         <label>Tên Giáo viên mượn:</label>
         <input type="text" id="gvThietBi" required placeholder="Họ và tên giáo viên">
         <label>Mã Thiết bị:</label>
-        <input type="text" id="maTB" required placeholder="Ví dụ: TB-LY-001">
+        <select id="maTB" required>
+            <option value="">Đang tải danh sách thiết bị...</option>
+        </select>
         <label>Ngày mượn thực hành:</label>
         <input type="date" id="ngayMuonTB" required>
         <button type="button" onclick="guiYeuCau('muonThietBi')">Xác Nhận Mượn</button>
@@ -74,10 +76,9 @@
         <input type="text" id="gvPhong" required placeholder="Họ và tên giáo viên">
         <label>Phòng chức năng:</label>
         <select id="maPhong">
-          <option value="P-LY">Phòng học bộ môn Vật lý</option>
-          <option value="P-HOA">Phòng học bộ môn Hóa học</option>
-          <option value="P-SINH">Phòng học bộ môn Sinh học</option>
-          <option value="P-NN">Phòng lab nghe nhìn ngoại ngữ</option>
+         <label>Phòng chức năng:</label>
+        <select id="maPhong" required>
+            <option value="">Đang tải danh sách phòng...</option>
         </select>
         <label>Ngày đăng ký dùng:</label>
         <input type="date" id="ngayDatPhong" required>
