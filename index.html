@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ thống Quản lý Thiết bị - THPT Bình Thủy</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="school-header">
+    <h1>TRƯỜNG THPT BÌNH THỦY</h1>
+    <p>Cổng Đăng Ký Thiết bị & Phòng học Bộ môn dành cho Giáo viên</p>
+  </header>
+
+  <nav class="tab-navigation">
+    <button class="tab-btn active" onclick="chuyenTab(event, 'trang-chu')">Trang Chủ</button>
+    <button class="tab-btn" onclick="chuyenTab(event, 'muon-tb')">Mượn Thiết Bị</button>
+    <button class="tab-btn" onclick="chuyenTab(event, 'muon-phong')">Mượn Phòng</button>
+    <button class="tab-btn" onclick="chuyenTab(event, 'bao-hong')">Báo Hỏng</button>
+    <button class="tab-btn" onclick="chuyenTab(event, 'mua-sam')">Đề Nghị Mua Sắm</button>
+    <button class="tab-btn" onclick="chuyenTab(event, 'ket-qua-gv')">Theo Dõi Kết Quả</button>
+  </nav>
+
+  <main class="container">
+    <div id="trang-chu" class="tab-content active">
+      <div class="dashboard-row">
+        <div class="status-card">
+          <h4>Phòng Bộ Môn Sẵn Sàng</h4>
+          <ul id="danh-sach-phong"><li>Đang đồng bộ dữ liệu...</li></ul>
+        </div>
+        <div class="status-card">
+          <h4>Danh Mục Thiết Bị Nổi Bật</h4>
+          <ul id="danh-sach-tb"><li>Đang đồng bộ dữ liệu...</li></ul>
+          <button class="btn-outline" onclick="taiDanhMucThietBi()">📥 Tải danh mục thiết bị (.xlsx)</button>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Các form đăng ký giữ nguyên cấu trúc -->
+    <div id="muon-tb" class="tab-content">
+      <h3>ĐĂNG KÝ MƯỢN THIẾT BỊ DẠY HỌC</h3>
+      <form id="formMuonTB" class="app-form">
+        <label>Tên Giáo viên mượn:</label>
+        <input type="text" id="gvThietBi" required placeholder="Họ và tên giáo viên">
+        <label>Mã Thiết bị:</label>
+        <input type="text" id="maTB" required placeholder="Ví dụ: TB-LY-001">
+        <label>Ngày mượn thực hành:</label>
+        <input type="date" id="ngayMuonTB" required>
+        <button type="button" onclick="guiYeuCau('muonThietBi')">Xác Nhận Mượn</button>
+      </form>
+    </div>
+
+    <div id="muon-phong" class="tab-content">
+      <h3>ĐĂNG KÝ SỬ DỤNG PHÒNG BỘ MÔN</h3>
+      <form id="formMuonPhong" class="app-form">
+        <label>Tên Giáo viên sử dụng:</label>
+        <input type="text" id="gvPhong" required placeholder="Họ và tên giáo viên">
+        <label>Phòng chức năng:</label>
+        <select id="maPhong">
+          <option value="P-LY">Phòng học bộ môn Vật lý</option>
+          <option value="P-HOA">Phòng học bộ môn Hóa học</option>
+          <option value="P-SINH">Phòng học bộ môn Sinh học</option>
+          <option value="P-NN">Phòng lab nghe nhìn ngoại ngữ</option>
+        </select>
+        <label>Ngày đăng ký dùng:</label>
+        <input type="date" id="ngayDatPhong" required>
+
+        <label>Buổi học:</label>
+        <select id="buoiHoc">
+          <option value="Buổi Sáng">Buổi Sáng</option>
+          <option value="Buổi Chiều">Buổi Chiều</option>
+        </select>
+
+        <label>Tiết học trong ngày:</label>
+        <input type="text" id="tietHoc" required placeholder="Ví dụ: 1-2 hoặc 4">
+        <button type="button" class="btn-orange" onclick="guiYeuCau('datPhong')">Xác Nhận Đặt Phòng</button>
+      </form>
+    </div>
+
+    <div id="bao-hong" class="tab-content">
+      <h3>BÁO CÁO SỰ CỐ THIẾT BỊ / PHÒNG HỌC</h3>
+      <form id="formBaoHong" class="app-form">
+        <label>Vị trí sự cố hoặc Mã thiết bị hỏng:</label>
+        <input type="text" id="viTriSuCo" required placeholder="Ví dụ: Máy tính số 12">
+        <label>Chi tiết tình trạng lỗi:</label>
+        <input type="text" id="moTaSuCo" required placeholder="Mô tả hiện tượng hỏng...">
+        <button type="button" class="btn-red" onclick="guiYeuCau('baoHong')">Gửi Báo Hỏng Sự Cố</button>
+        <button type="button" style="flex: 1; background-color: #17a2b8;" onclick="xuatFileWord('baoHong')">📄 Xuất & In Phiếu Word</button>
+      </form>
+    </div>
+
+    <div id="mua-sam" class="tab-content">
+      <h3>ĐỀ XUẤT MUA SẮM VẬT TƯ THIẾT BỊ</h3>
+      <form id="formMuaSam" class="app-form">
+        <label>Tên thiết bị đề xuất mua thêm:</label>
+        <input type="text" id="tenTBMuaSam" required placeholder="Tên thiết bị, hóa chất...">
+        <label>Số lượng:</label>
+        <input type="number" id="soLuongMuaSam" required min="1">
+        <label>Lý do mua sắm:</label>
+        <input type="text" id="lyDoMuaSam" required placeholder="Phục vụ bài thực hành nào...">
+        <button type="button" class="btn-green" onclick="guiYeuCau('muaSam')">Gửi Đề Xuất</button>
+        <button type="button" style="flex: 1; background-color: #17a2b8;" onclick="xuatFileWord('muaSam')">📄 Xuất & In Phiếu Word</button>
+      </form>
+    </div>
+
+    <div id="ket-qua-gv" class="tab-content">
+      <h3>TIẾN ĐỘ PHÊ DUYỆT YÊU CẦU</h3>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Thời gian gửi</th>
+              <th>Giáo Viên</th>
+              <th>Nội Dung</th>
+              <th>Chi Tiết</th>
+              <th>Trạng Thái</th>
+            </tr>
+          </thead>
+          <tbody id="table-ket-qua-gv">
+            <!-- Bảng kết quả chỉ xem dành cho GV -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div id="real-time-clock">Đang tải thời gian...</div>
+    <p>Cần hỗ trợ? Vui lòng liên hệ Quản lý thiết bị: <strong>Nguyễn Hoàng Sang</strong> - Zalo: 0968.671.706</p>
+  </footer>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; color: #333; }
+.container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+
+.school-header { background: linear-gradient(135deg, #0056b3, #007bff); color: white; text-align: center; padding: 15px 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.school-header h1 { margin: 0; font-size: 24px; }
+.school-header h2 { margin: 0; font-size: 16px; }
+.school-header p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
+
+/* Đồng hồ thời gian thực */
+#real-time-clock { 
+    margin-bottom: 15px; 
+    font-size: 15px; 
+    font-weight: bold; 
+    background: rgba(0, 0, 0, 0.3); /* Nền tối mờ */
+    border: 1px solid #555;
+    display: inline-block; 
+    padding: 10px 25px; 
+    border-radius: 20px; 
+    line-height: 1.5; 
+    color: #fff;
+}
+
+.tab-navigation { display: flex; justify-content: center; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; }
+.tab-btn { background: none; border: none; padding: 15px 15px; font-size: 15px; color: #555; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.4s; white-space: nowrap; }
+.tab-btn:hover { color: #007bff; background-color: #eaf2f9; }
+.tab-btn.active { color: #007bff; border-bottom: 3px solid #007bff; font-weight: bold; }
+
+.tab-content { display: none; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-top: 15px; }
+.tab-content.active { display: block; }
+
+.app-form { max-width: 500px; margin: 0 auto; }
+label { display: block; margin-top: 15px; font-weight: 600; font-size: 14px; }
+input, select, button { width: 100%; padding: 12px; margin-top: 6px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+
+button { background-color: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+button:hover { background-color: #0056b3; }
+.btn-orange { background-color: #fd7e14; }
+.btn-orange:hover { background-color: #e06d0b; }
+.btn-red { background-color: #dc3545; }
+.btn-red:hover { background-color: #bd2130; }
+.btn-green { background-color: #28a745; }
+.btn-green:hover { background-color: #218838; }
+
+.btn-outline { background-color: transparent; border: 2px solid #007bff; color: #007bff; margin-top: 15px; }
+.btn-outline:hover { background-color: #007bff; color: white; }
+
+.dashboard-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.status-card { background: #fdfdfd; border: 1px solid #e3e6f0; border-radius: 6px; padding: 20px; }
+.status-card h4 { margin-top: 0; color: #4e73df; border-bottom: 1px solid #eaecf4; padding-bottom: 10px; }
+.status-card ul { list-style: none; padding: 0; margin: 0; }
+.status-card li { padding: 10px 0; border-bottom: 1px dashed #f1f1f1; display: flex; align-items: center; font-size: 14px; }
+.note { font-size: 12px; font-style: italic; color: #6c757d; margin-top: -10px; margin-bottom: 10px; }
+
+.table-container { width: 100%; overflow-x: auto; margin-top: 15px; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; }
+.data-table th, .data-table td { padding: 12px 15px; border: 1px solid #dee2e6; }
+.data-table th { background-color: #f8f9fa; font-weight: 600; }
+
+.badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; margin-right: 10px; display: inline-block; }
+.badge-green { background-color: #28a745; }
+.badge-orange { background-color: #fd7e14; }
+.badge-red { background-color: #dc3545; }
+
+/* Các nút duyệt của admin trong bảng */
+.action-btn { padding: 6px 10px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; color: white; margin: 2px; width: auto; margin-top: 0;}
+.btn-duyet { background-color: #28a745; }
+.btn-duyet:hover { background-color: #218838; }
+.btn-tuchoi { background-color: #dc3545; }
+.btn-tuchoi:hover { background-color: #bd2130; }
+
+/* Footer liên hệ */
+.app-footer { background-color: #65a8ea; color: rgb(24, 24, 24); text-align: center; padding: 5px; margin-top: 15px; font-size: 14px; }
+.app-footer p { margin: 3px 0; }
+.app-footer strong { color: #011f89; }
