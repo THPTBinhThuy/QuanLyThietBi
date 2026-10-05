@@ -164,6 +164,49 @@ function taiDuLieuTrangChu() {
         }
 
     })
+        // ==========================================
+        // KHU VỰC NHẮC VIỆC TRÊN TRANG ADMIN
+        // ==========================================
+        const ulNhacViec = document.getElementById('danh-sach-nhac-viec');
+        if (ulNhacViec) {
+            ulNhacViec.innerHTML = "";
+            
+            // 1. Tính toán ra "Ngày Mai" là ngày mấy
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const t_yyyy = tomorrow.getFullYear();
+            const t_mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+            const t_dd = String(tomorrow.getDate()).padStart(2, '0');
+            const tomorrowStr = `${t_yyyy}-${t_mm}-${t_dd}`; // Dữ liệu ngày mai (YYYY-MM-DD)
+
+            // 2. Lọc ra các yêu cầu chưa duyệt
+            const pendingReqs = ketQuaData.filter(item => item.trangThai === "Chờ duyệt" || !item.trangThai);
+            
+            // 3. Lọc ra các yêu cầu cho NGÀY MAI đã được duyệt
+            const tomorrowReqs = ketQuaData.filter(item => 
+                item.trangThai === "Đã Duyệt" && (item.chiTiet || "").includes(tomorrowStr)
+            );
+
+            // Bơm ra màn hình: Cảnh báo chờ duyệt
+            if (pendingReqs.length > 0) {
+                ulNhacViec.innerHTML += `<li style="color: #dc3545; font-weight: bold; background: #ffe6e6; padding: 10px; border-radius: 5px;">🚨 BẠN CÓ ${pendingReqs.length} YÊU CẦU MỚI CHỜ DUYỆT! (Vui lòng qua tab Duyệt Yêu Cầu)</li>`;
+            } else {
+                ulNhacViec.innerHTML += `<li style="color: #6c757d;">✅ Không có yêu cầu nào đang chờ duyệt.</li>`;
+            }
+
+            // Bơm ra màn hình: Chuẩn bị cho ngày mai
+            ulNhacViec.innerHTML += `<li style="margin-top: 15px; font-weight: bold; color: #0056b3;">📅 CÔNG VIỆC CẦN CHUẨN BỊ CHO NGÀY MAI (${t_dd}/${t_mm}):</li>`;
+            
+            if (tomorrowReqs.length > 0) {
+                tomorrowReqs.forEach(req => {
+                    ulNhacViec.innerHTML += `<li style="border-left: 3px solid #007bff; margin-left: 10px; padding-left: 10px; margin-bottom: 5px;">
+                        <strong>${req.tenGV}</strong> | ${req.loaiYeuCau}: ${req.chiTiet}
+                    </li>`;
+                });
+            } else {
+                ulNhacViec.innerHTML += `<li style="color: #28a745; margin-left: 10px;">Ngày mai chưa có lịch mượn phòng/thiết bị nào. Bạn có thể nghỉ ngơi!</li>`;
+            }
+        }
     .catch(err => {
         console.error("Lỗi:", err);
         ulPhong.innerHTML = "<li style='color:red;'>Lỗi kết nối CSDL Google.</li>";
