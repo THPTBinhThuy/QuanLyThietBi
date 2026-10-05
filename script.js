@@ -58,9 +58,8 @@ function chuyenTab(event, tabId) {
     if (tabId === 'ket-qua') taiKetQuaTuSheets();
     if (tabId === 'ket-qua-gv') taiKetQuaGiaoVien();
 }
-
 // ==========================================
-// 3. AUTO CẬP NHẬT TRẠNG THÁI (TRANG CHỦ)
+// 3. AUTO CẬP NHẬT TRẠNG THÁI & BƠM DỮ LIỆU VÀO FORM
 // ==========================================
 function taiDuLieuTrangChu() {
     const ulPhong = document.getElementById('danh-sach-phong');
@@ -85,7 +84,6 @@ function taiDuLieuTrangChu() {
         let currentTiet = -1;
         let currentBuoi = "";
 
-        // Xác định tiết hiện tại
         for (let tiet of thoiGianBieu) {
             if (tongPhut >= tiet.batDau && tongPhut <= tiet.ketThuc) {
                 currentTiet = parseInt(tiet.ten.match(/\d+/)[0]);
@@ -94,12 +92,11 @@ function taiDuLieuTrangChu() {
             }
         }
 
-        // Lọc yêu cầu ĐÃ DUYỆT trong HÔM NAY
         const approvedToday = ketQuaData.filter(item => 
             item.trangThai === "Đã Duyệt" && (item.chiTiet || "").includes(todayStr)
         );
 
-        // AUTO CẬP NHẬT TRẠNG THÁI PHÒNG
+        // 1. CẬP NHẬT TRẠNG THÁI PHÒNG
         ulPhong.innerHTML = "";
         dashboardData.phong.forEach(p => {
             let status = "Trống";
@@ -108,9 +105,7 @@ function taiDuLieuTrangChu() {
 
             if (currentTiet !== -1) {
                 let dangBan = approvedToday.find(req => {
-                    // Kiểm tra đúng loại yêu cầu, đúng phòng, đúng buổi
                     if (req.loaiYeuCau === "Đặt Phòng" && req.chiTiet.includes(p.maPhong) && req.chiTiet.includes(currentBuoi)) {
-                        // FIX LỖI Ở ĐÂY: Cắt chuỗi chính xác từ chữ "Tiết:" thay vì dấu "|"
                         let phanTiet = req.chiTiet.split("Tiết:")[1]; 
                         if (phanTiet) {
                             let numbers = phanTiet.match(/\d+/g); 
@@ -133,29 +128,46 @@ function taiDuLieuTrangChu() {
             ulPhong.innerHTML += `<li><span class="badge ${badge}">${status}</span> <strong>${p.maPhong}</strong>: ${p.tenPhong}${gvInfo}</li>`;
         });
 
-        // AUTO CẬP NHẬT TỒN KHO THIẾT BỊ
+        // 2. CẬP NHẬT TỒN KHO THIẾT BỊ
         ulTB.innerHTML = "";
         dashboardData.thietBi.forEach(tb => {
-            let slBanDau = parseInt(tb.soLuong) || 0; // Nếu file gõ sai (chữ thay vì số), nó sẽ là 0
+            let slBanDau = parseInt(tb.soLuong) || 0;
             let slDaMuon = 0;
-            
             approvedToday.forEach(req => {
-                if (req.loaiYeuCau === "Mượn Thiết Bị" && req.chiTiet.includes(tb.maTB)) {
-                    slDaMuon += 1; 
-                }
+                if (req.loaiYeuCau === "Mượn Thiết Bị" && req.chiTiet.includes(tb.maTB)) slDaMuon += 1; 
             });
 
             let slConLai = slBanDau - slDaMuon;
-            let donVi = tb.donVi ? tb.donVi : ''; 
+            let donVi = tb.donVi ? tb.donVi : '';
             let status = slConLai > 0 ? slConLai + ' ' + donVi : 'Hết / Đang mượn';
             let badge = slConLai > 0 ? "badge-green" : "badge-red";
             ulTB.innerHTML += `<li><span class="badge ${badge}">${status}</span> <strong>${tb.maTB}</strong>: ${tb.tenTB}</li>`;
         });
+
+        // ==========================================
+        // 3. TỰ ĐỘNG BƠM DỮ LIỆU VÀO FORM ĐĂNG KÝ
+        // ==========================================
+        const selectPhong = document.getElementById('maPhong');
+        if (selectPhong) {
+            selectPhong.innerHTML = '<option value="">-- Chọn phòng bộ môn --</option>';
+            dashboardData.phong.forEach(p => {
+                selectPhong.innerHTML += `<option value="${p.maPhong}">${p.tenPhong}</option>`;
+            });
+        }
+
+        const selectTB = document.getElementById('maTB');
+        if (selectTB && selectTB.tagName === 'SELECT') {
+            selectTB.innerHTML = '<option value="">-- Chọn thiết bị cần mượn --</option>';
+            dashboardData.thietBi.forEach(tb => {
+                selectTB.innerHTML += `<option value="${tb.maTB}">${tb.maTB} - ${tb.tenTB}</option>`;
+            });
+        }
+
     })
     .catch(err => {
         console.error("Lỗi:", err);
-        ulPhong.innerHTML = "<li style='color:red;'>Lỗi tải dữ liệu.</li>";
-        ulTB.innerHTML = "<li style='color:red;'>Lỗi tải dữ liệu.</li>";
+        ulPhong.innerHTML = "<li style='color:red;'>Lỗi kết nối CSDL Google.</li>";
+        ulTB.innerHTML = "<li style='color:red;'>Lỗi kết nối CSDL Google.</li>";
     });
 }
 // ==========================================
