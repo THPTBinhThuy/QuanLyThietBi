@@ -116,4 +116,235 @@ function taiDuLieuTrangChu() {
         const now = new Date();
         const yyyy = now.getFullYear();
         const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const dd = String(now
+        const dd = String(now.getDate()).padStart(2, '0');
+        const todayStr = `${yyyy}-${mm}-${dd}`; 
+
+        const tongPhut = now.getHours() * 60 + now.getMinutes();
+        let currentTiet = -1, currentBuoi = "";
+
+        for (let tiet of thoiGianBieu) {
+            if (tongPhut >= tiet.batDau && tongPhut <= tiet.ketThuc) {
+                currentTiet = parseInt(tiet.ten.match(/\d+/)[0]);
+                currentBuoi = tiet.ten.includes("Sáng") ? "Sáng" : "Chiều";
+                break;
+            }
+        }
+
+        const approvedToday = ketQuaData.filter(item => item.trangThai === "Đã Duyệt" && (item.chiTiet || "").includes(todayStr));
+
+        // A. PHÒNG BỘ MÔN
+        ulPhong.innerHTML = "";
+        if (dashboardData.phong.length === 0) ulPhong.innerHTML = "<li>Chưa có dữ liệu phòng.</li>";
+        
+        dashboardData.phong.forEach(p => {
+            let status = "Trống", badge = "badge-green", gvInfo = "";
+            if (currentTiet !== -1) {
+                let dangBan = approvedToday.find(req => {
+                    if (req.loaiYeuCau === "Đặt Phòng" && req.chiTiet.includes(p.maPhong) && req.chiTiet.includes(currentBuoi)) {
+                        let phanTiet = req.chiTiet.split("Tiết:")[1]; 
+                        if (phanTiet) {
+                            let numbers = phanTiet.match(/\d+/g); 
+                            if (numbers && numbers.length > 0) {
+                                let tStart = parseInt(numbers[0]), tEnd = parseInt(numbers[numbers.length - 1]);
+                                if (currentTiet >= tStart && currentTiet <= tEnd) return true;
+                            }
+                        }
+                    }
+                    return false;
+                });
+                if (dangBan) { status = "Đang sử dụng"; badge = "badge-red"; gvInfo = ` <span style="font-size: 13px; color: #dc3545; font-style: italic;">(GV: ${dangBan.tenGV})</span>`; }
+            }
+            ulPhong.innerHTML += `<li><span class="badge ${badge}">${status}</span> <strong>${p.maPhong}</strong>: ${p.tenPhong}${gvInfo}</li>`;
+        });
+
+        // B. THIẾT BỊ
+        ulTB.innerHTML = "";
+        if (dashboardData.thietBi.length === 0) ulTB.innerHTML = "<li>Chưa có dữ liệu thiết bị.</li>";
+
+        dashboardData.thietBi.forEach(tb => {
+            let slBanDau = parseInt(tb.soLuong) || 0;
+            let slDaMuon = 0;
+            approvedToday.forEach(req => {
+                if (req.loaiYeuCau === "Mượn Thiết Bị" && req.chiTiet.includes(tb.maTB)) slDaMuon += 1; 
+            });
+
+            let slConLai = slBanDau - slDaMuon;
+            let donVi = tb.donVi ? tb.donVi : '';
+            let status = slConLai > 0 ? slConLai + ' ' + donVi : 'Hết / Đang mượn';
+            let badge = slConLai > 0 ? "badge-green" : "badge-red";
+            ulTB.innerHTML += `<li><span class="badge ${badge}">${status}</span> <strong>${tb.maTB}</strong>: ${tb.tenTB}</li>`;
+        });
+
+        // C. BƠM DỮ LIỆU VÀO FORM 
+        const selectPhong = document.getElementById('maPhong');
+        if (selectPhong && selectPhong.tagName === 'SELECT') {
+            selectPhong.innerHTML = '<option value="">-- Chọn phòng bộ môn --</option>';
+            dashboardData.phong.forEach(p => { selectPhong.innerHTML += `<option value="${p.maPhong}">${p.tenPhong}</option>`; });
+        }
+
+        const dataTBList = document.getElementById('dataTB');
+        if (dataTBList) {
+            dataTBList.innerHTML = '';
+            dashboardData.thietBi.forEach(tb => { dataTBList.innerHTML += `<option value="${tb.maTB} - ${tb.tenTB}">`; });
+        }
+
+        // D. NHẮC VIỆC (ADMIN)
+        const ulNhacViec = document.getElementById('danh-sach-nhac-viec');
+        if (ulNhacViec) {
+            ulNhacViec.innerHTML = "";
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const t_yyyy = tomorrow.getFullYear();
+            const t_mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+            const t_dd = String(tomorrow.getDate()).padStart(2, '0');
+            const tomorrowStr = `${t_yyyy}-${t_mm}-${t_dd}`; 
+
+            const pendingReqs = ketQuaData.filter(item => item.trangThai === "Chờ duyệt" || !item.trangThai);
+            const tomorrowReqs = ketQuaData.filter(item => item.trangThai === "Đã Duyệt" && (item.chiTiet || "").includes(tomorrowStr));
+
+            if (pendingReqs.length > 0) ulNhacViec.innerHTML += `<li style="color: #dc3545; font-weight: bold; background: #ffe6e6; padding: 10px; border-radius: 5px;">🚨 BẠN CÓ ${pendingReqs.length} YÊU CẦU MỚI CHỜ DUYỆT!</li>`;
+            else ulNhacViec.innerHTML += `<li style="color: #6c757d;">✅ Không có yêu cầu nào đang chờ duyệt.</li>`;
+
+            ulNhacViec.innerHTML += `<li style="margin-top: 15px; font-weight: bold; color: #0056b3;">📅 CẦN CHUẨN BỊ CHO NGÀY MAI (${t_dd}/${t_mm}):</li>`;
+            if (tomorrowReqs.length > 0) tomorrowReqs.forEach(req => { ulNhacViec.innerHTML += `<li style="border-left: 3px solid #007bff; margin-left: 10px; padding-left: 10px; margin-bottom: 5px;"><strong>${req.tenGV}</strong> | ${req.loaiYeuCau}: ${req.chiTiet}</li>`; });
+            else ulNhacViec.innerHTML += `<li style="color: #28a745; margin-left: 10px;">Chưa có lịch mượn phòng/thiết bị nào cho ngày mai.</li>`;
+        }
+    })
+    .catch(err => {
+        console.error("Lỗi:", err);
+        ulPhong.innerHTML = "<li style='color:red;'>Lỗi tải dữ liệu.</li>";
+        ulTB.innerHTML = "<li style='color:red;'>Lỗi tải dữ liệu.</li>";
+    });
+}
+
+// ==========================================
+// 5. TẢI BẢNG KẾT QUẢ
+// ==========================================
+function taiKetQuaTuSheets() {
+    const tbody = document.getElementById('table-ket-qua-dang-ky');
+    if (!tbody) return;
+    tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Đang tải dữ liệu...</td></tr>";
+
+    fetch(WEB_APP_URL + "?action=getKetQua").then(res => res.json()).then(data => {
+        tbody.innerHTML = "";
+        data.forEach(item => {
+            let badgeColor = item.trangThai === "Đã Duyệt" ? "badge-green" : (item.trangThai === "Từ chối" ? "badge-red" : "badge-orange");
+            let btnAdmin = (item.trangThai === "Chờ duyệt" || !item.trangThai) ? `
+                <button class="action-btn btn-duyet" onclick="xuLyAdmin('${item.id}', 'Đã Duyệt')">Duyệt</button>
+                <button class="action-btn btn-tuchoi" onclick="xuLyAdmin('${item.id}', 'Từ chối')">Từ chối</button>` : "";
+            tbody.innerHTML += `<tr><td>${item.id || 'N/A'}</td><td>${item.tenGV}</td><td>${item.loaiYeuCau}</td><td>${item.chiTiet}</td>
+                                <td><span class="badge ${badgeColor}">${item.trangThai || 'Chờ duyệt'}</span></td><td>${btnAdmin}</td></tr>`;
+        });
+    });
+}
+
+function taiKetQuaGiaoVien() {
+    const tbody = document.getElementById('table-ket-qua-gv');
+    if (!tbody) return;
+    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Đang tải dữ liệu...</td></tr>";
+
+    fetch(WEB_APP_URL + "?action=getKetQua").then(res => res.json()).then(data => {
+        tbody.innerHTML = "";
+        data.forEach(item => {
+            let badgeColor = item.trangThai === "Đã Duyệt" ? "badge-green" : (item.trangThai === "Từ chối" ? "badge-red" : "badge-orange");
+            tbody.innerHTML += `<tr><td>${item.thoiGian}</td><td>${item.tenGV}</td><td>${item.loaiYeuCau}</td>
+                                <td>${item.chiTiet}</td><td><span class="badge ${badgeColor}">${item.trangThai || 'Chờ duyệt'}</span></td></tr>`;
+        });
+    });
+}
+
+// ==========================================
+// 6. GỬI YÊU CẦU & XỬ LÝ ADMIN
+// ==========================================
+function guiYeuCau(loaiHanhDong) {
+    let data = { action: loaiHanhDong };
+    if (loaiHanhDong === 'muonThietBi') {
+        data.tenGV = document.getElementById('gvThietBi').value; 
+        data.maTB = document.getElementById('maTB').value; 
+        if(!data.maTB) return alert("Vui lòng chọn ít nhất 1 thiết bị!");
+        data.ngayMuon = document.getElementById('ngayMuonTB').value;
+    } else if (loaiHanhDong === 'datPhong') {
+        data.tenGV = document.getElementById('gvPhong').value; 
+        data.maPhong = document.getElementById('maPhong').value; 
+        data.ngayDat = document.getElementById('ngayDatPhong').value; 
+        let selBuoi = document.getElementById('buoiHoc');
+        data.tietHoc = (selBuoi ? selBuoi.value : "Buổi Sáng") + " | Tiết: " + document.getElementById('tietHoc').value;
+    } else if (loaiHanhDong === 'baoHong') {
+        data.viTri = document.getElementById('viTriSuCo').value; 
+        data.moTa = document.getElementById('moTaSuCo').value;
+    } else if (loaiHanhDong === 'muaSam') {
+        data.tenTB = document.getElementById('tenTBMuaSam').value; 
+        data.soLuong = document.getElementById('soLuongMuaSam') ? document.getElementById('soLuongMuaSam').value : "Nhiều món"; 
+        data.lyDo = document.getElementById('lyDoMuaSam').value;
+    }
+
+    fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })
+    .then(() => { 
+        alert("Đã gửi yêu cầu thành công!"); 
+        document.querySelectorAll('.app-form').forEach(f => f.reset()); 
+        danhSachMuonTB = []; renderDanhSachMuon();
+    });
+}
+
+function xuLyAdmin(id, hanhDong) {
+    if(confirm(`Xác nhận ${hanhDong} yêu cầu ID: ${id}?`)) {
+        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'adminDuyet', id: id, ketQua: hanhDong }) })
+        .then(() => { alert("Đã xử lý! Đang làm mới bảng..."); setTimeout(taiKetQuaTuSheets, 1500); taiDuLieuTrangChu(); });
+    }
+}
+
+// ==========================================
+// 7. TIỆN ÍCH: TẢI DANH MỤC & XUẤT WORD
+// ==========================================
+function moTrangTinh() {
+    if (SPREADSHEET_URL.includes("LINK_GOOGLE_SHEETS")) { alert("Vui lòng khai báo link Google Sheets gốc ở đầu file script.js!"); return; }
+    window.open(SPREADSHEET_URL, '_blank');
+}
+function taiDanhMucThietBi() {
+    if (SPREADSHEET_URL.includes("LINK_GOOGLE_SHEETS")) { alert("Hệ thống chưa được cấu hình Link tải!"); return; }
+    try {
+        let urlParts = SPREADSHEET_URL.split('/');
+        window.location.href = `https://docs.google.com/spreadsheets/d/${urlParts[urlParts.indexOf('d') + 1]}/export?format=xlsx`;
+    } catch (error) { alert("Link CSDL không hợp lệ!"); }
+}
+
+function xuatFileWord(loaiPhieu) {
+    let title = "", content = "";
+    const today = new Date();
+    const ngayIn = `Cần Thơ, ngày ${today.getDate()} tháng ${today.getMonth() + 1} năm ${today.getFullYear()}`;
+
+    if (loaiPhieu === 'baoHong') {
+        let viTri = document.getElementById('viTriSuCo').value;
+        let moTa = document.getElementById('moTaSuCo').value;
+        if(!viTri || !moTa) return alert("Vui lòng nhập đủ thông tin báo hỏng!");
+        title = "PHIẾU BÁO HỎNG THIẾT BỊ / SỰ CỐ PHÒNG HỌC";
+        content = `<p style="font-size: 14pt;"><strong>Vị trí / Mã thiết bị sự cố:</strong><br> ${viTri.replace(/\n/g, '<br>')}</p>
+                   <p style="font-size: 14pt;"><strong>Chi tiết lỗi:</strong><br> ${moTa.replace(/\n/g, '<br>')}</p>
+                   <p style="font-size: 14pt;">Kính đề nghị BGH và Quản trị viên xem xét, sửa chữa hoặc thay thế kịp thời.</p>`;
+    } 
+    else if (loaiPhieu === 'muaSam') {
+        let tenTB = document.getElementById('tenTBMuaSam').value;
+        let lyDo = document.getElementById('lyDoMuaSam').value;
+        if(!tenTB || !lyDo) return alert("Vui lòng nhập đủ thông tin đề xuất!");
+        title = "PHIẾU ĐỀ XUẤT MUA SẮM THIẾT BỊ";
+        content = `<p style="font-size: 14pt;"><strong>Danh sách thiết bị đề xuất mua:</strong><br> ${tenTB.replace(/\n/g, '<br>')}</p>
+                   <p style="font-size: 14pt;"><strong>Lý do sử dụng:</strong> ${lyDo}</p>
+                   <p style="font-size: 14pt;">Kính đề nghị BGH phê duyệt mua sắm để phục vụ giảng dạy.</p>`;
+    }
+
+    let htmlString = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'></head><body style="font-family: 'Times New Roman', serif;"><table width="100%" style="text-align: center; font-size: 13pt;"><tr><td width="40%">SỞ GIÁO DỤC VÀ ĐÀO TẠO<br><strong>TRƯỜNG THPT BÌNH THỦY</strong><br><hr style="width: 50%;"></td><td width="60%"><strong>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM<br>Độc lập - Tự do - Hạnh phúc</strong><br><hr style="width: 40%;"></td></tr></table><br><h2 style="text-align: center; font-size: 18pt;">${title}</h2><div style="line-height: 1.5;">${content}</div><br><br><table width="100%" style="text-align: center; font-size: 14pt;"><tr><td width="50%"></td><td width="50%"><em>${ngayIn}</em></td></tr><tr><td width="50%"><strong>NGƯỜI LẬP PHIẾU</strong><br><em>(Ký, ghi rõ họ tên)</em></td><td width="50%"><strong>HIỆU TRƯỞNG PHÊ DUYỆT</strong><br><em>(Ký, đóng dấu)</em></td></tr></table></body></html>`;
+    let blob = new Blob(['\ufeff', htmlString], { type: 'application/msword' });
+    let link = document.createElement('a');
+    link.href = URL.createObjectURL(blob); link.download = `Phieu_${loaiPhieu}_${Date.now()}.doc`;
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+}
+
+// ==========================================
+// 8. KHỞI CHẠY TỰ ĐỘNG
+// ==========================================
+window.onload = function() {
+    setInterval(capNhatThoiGian, 1000); capNhatThoiGian();
+    taiDuLieuTrangChu();
+    if (document.getElementById('admin-panel')) taiKetQuaTuSheets();
+    if (document.getElementById('ket-qua-gv') && document.getElementById('ket-qua-gv').classList.contains('active')) taiKetQuaGiaoVien();
+};
