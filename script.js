@@ -1,6 +1,7 @@
-// Thay link Google Web App của bạn vào đây!
+// ========================================================
+// 1. CẤU HÌNH LINK KẾT NỐI (DÁN LINK CỦA BẠN VÀO ĐÂY)
+// ========================================================
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwEZuJai2Fik6poHkc_Ef7UtN67vAFKpBdvnFdopWVLM8J6rdheVw4msrlUbUTrJA1m2A/exec";
-// KHAI BÁO LINK FILE GOOGLE SHEETS GỐC CỦA BẠN VÀO ĐÂY:
 const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/10Q6A2YD9AgJn3AdbBrpdhg-cDIvMK04JoJJv4Cf3fGo/edit?usp=sharing";
 
 // ==========================================
@@ -75,6 +76,10 @@ function taiDuLieuTrangChu() {
         fetch(WEB_APP_URL + "?action=getKetQua").then(res => res.json())
     ])
     .then(([dashboardData, ketQuaData]) => {
+        if (!dashboardData.phong) dashboardData.phong = [];
+        if (!dashboardData.thietBi) dashboardData.thietBi = [];
+        if (!ketQuaData) ketQuaData = [];
+
         const now = new Date();
         const yyyy = now.getFullYear();
         const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -99,6 +104,8 @@ function taiDuLieuTrangChu() {
 
         // A. CẬP NHẬT TRẠNG THÁI PHÒNG
         ulPhong.innerHTML = "";
+        if (dashboardData.phong.length === 0) ulPhong.innerHTML = "<li>Chưa có dữ liệu phòng.</li>";
+        
         dashboardData.phong.forEach(p => {
             let status = "Trống";
             let badge = "badge-green";
@@ -131,6 +138,8 @@ function taiDuLieuTrangChu() {
 
         // B. CẬP NHẬT TỒN KHO THIẾT BỊ
         ulTB.innerHTML = "";
+        if (dashboardData.thietBi.length === 0) ulTB.innerHTML = "<li>Chưa có dữ liệu thiết bị.</li>";
+
         dashboardData.thietBi.forEach(tb => {
             let slBanDau = parseInt(tb.soLuong) || 0;
             let slDaMuon = 0;
@@ -145,24 +154,20 @@ function taiDuLieuTrangChu() {
             ulTB.innerHTML += `<li><span class="badge ${badge}">${status}</span> <strong>${tb.maTB}</strong>: ${tb.tenTB}</li>`;
         });
 
-        // C. TỰ ĐỘNG BƠM DỮ LIỆU VÀO FORM ĐĂNG KÝ
+        // C. BƠM DỮ LIỆU VÀO FORM (Chỉ xử lý nếu tồn tại thẻ select)
         const selectPhong = document.getElementById('maPhong');
-        if (selectPhong) {
+        if (selectPhong && selectPhong.tagName === 'SELECT') {
             selectPhong.innerHTML = '<option value="">-- Chọn phòng bộ môn --</option>';
-            dashboardData.phong.forEach(p => {
-                selectPhong.innerHTML += `<option value="${p.maPhong}">${p.tenPhong}</option>`;
-            });
+            dashboardData.phong.forEach(p => { selectPhong.innerHTML += `<option value="${p.maPhong}">${p.tenPhong}</option>`; });
         }
 
         const selectTB = document.getElementById('maTB');
         if (selectTB && selectTB.tagName === 'SELECT') {
             selectTB.innerHTML = '<option value="">-- Chọn thiết bị cần mượn --</option>';
-            dashboardData.thietBi.forEach(tb => {
-                selectTB.innerHTML += `<option value="${tb.maTB}">${tb.maTB} - ${tb.tenTB}</option>`;
-            });
+            dashboardData.thietBi.forEach(tb => { selectTB.innerHTML += `<option value="${tb.maTB}">${tb.maTB} - ${tb.tenTB}</option>`; });
         }
 
-        // D. KHU VỰC NHẮC VIỆC TRÊN TRANG ADMIN
+        // D. NHẮC VIỆC (Chỉ hiển thị bên trang Admin)
         const ulNhacViec = document.getElementById('danh-sach-nhac-viec');
         if (ulNhacViec) {
             ulNhacViec.innerHTML = "";
@@ -177,25 +182,25 @@ function taiDuLieuTrangChu() {
             const tomorrowReqs = ketQuaData.filter(item => item.trangThai === "Đã Duyệt" && (item.chiTiet || "").includes(tomorrowStr));
 
             if (pendingReqs.length > 0) {
-                ulNhacViec.innerHTML += `<li style="color: #dc3545; font-weight: bold; background: #ffe6e6; padding: 10px; border-radius: 5px;">🚨 BẠN CÓ ${pendingReqs.length} YÊU CẦU MỚI CHỜ DUYỆT! (Vui lòng qua tab Duyệt Yêu Cầu)</li>`;
+                ulNhacViec.innerHTML += `<li style="color: #dc3545; font-weight: bold; background: #ffe6e6; padding: 10px; border-radius: 5px;">🚨 BẠN CÓ ${pendingReqs.length} YÊU CẦU MỚI CHỜ DUYỆT!</li>`;
             } else {
                 ulNhacViec.innerHTML += `<li style="color: #6c757d;">✅ Không có yêu cầu nào đang chờ duyệt.</li>`;
             }
 
-            ulNhacViec.innerHTML += `<li style="margin-top: 15px; font-weight: bold; color: #0056b3;">📅 CÔNG VIỆC CẦN CHUẨN BỊ CHO NGÀY MAI (${t_dd}/${t_mm}):</li>`;
+            ulNhacViec.innerHTML += `<li style="margin-top: 15px; font-weight: bold; color: #0056b3;">📅 CẦN CHUẨN BỊ CHO NGÀY MAI (${t_dd}/${t_mm}):</li>`;
             if (tomorrowReqs.length > 0) {
                 tomorrowReqs.forEach(req => {
                     ulNhacViec.innerHTML += `<li style="border-left: 3px solid #007bff; margin-left: 10px; padding-left: 10px; margin-bottom: 5px;"><strong>${req.tenGV}</strong> | ${req.loaiYeuCau}: ${req.chiTiet}</li>`;
                 });
             } else {
-                ulNhacViec.innerHTML += `<li style="color: #28a745; margin-left: 10px;">Ngày mai chưa có lịch mượn phòng/thiết bị nào. Bạn có thể nghỉ ngơi!</li>`;
+                ulNhacViec.innerHTML += `<li style="color: #28a745; margin-left: 10px;">Chưa có lịch mượn phòng/thiết bị nào cho ngày mai.</li>`;
             }
         }
     })
     .catch(err => {
         console.error("Lỗi:", err);
-        ulPhong.innerHTML = "<li style='color:red;'>Lỗi kết nối CSDL Google.</li>";
-        ulTB.innerHTML = "<li style='color:red;'>Lỗi kết nối CSDL Google.</li>";
+        ulPhong.innerHTML = "<li style='color:red;'>Lỗi tải dữ liệu.</li>";
+        ulTB.innerHTML = "<li style='color:red;'>Lỗi tải dữ liệu.</li>";
     });
 }
 
@@ -237,7 +242,7 @@ function taiKetQuaGiaoVien() {
 }
 
 // ==========================================
-// 6. GỬI & DUYỆT YÊU CẦU
+// 6. GỬI YÊU CẦU & XỬ LÝ ADMIN
 // ==========================================
 function guiYeuCau(loaiHanhDong) {
     let data = { action: loaiHanhDong };
@@ -249,7 +254,8 @@ function guiYeuCau(loaiHanhDong) {
         data.tenGV = document.getElementById('gvPhong').value; 
         data.maPhong = document.getElementById('maPhong').value; 
         data.ngayDat = document.getElementById('ngayDatPhong').value; 
-        let buoiHoc = document.getElementById('buoiHoc') ? document.getElementById('buoiHoc').value : "Buổi Sáng";
+        let selBuoi = document.getElementById('buoiHoc');
+        let buoiHoc = selBuoi ? selBuoi.value : "Buổi Sáng";
         data.tietHoc = buoiHoc + " | Tiết: " + document.getElementById('tietHoc').value;
     } else if (loaiHanhDong === 'baoHong') {
         data.viTri = document.getElementById('viTriSuCo').value; 
@@ -272,17 +278,7 @@ function xuLyAdmin(id, hanhDong) {
 }
 
 // ==========================================
-// 7. KHỞI CHẠY TỰ ĐỘNG
-// ==========================================
-window.onload = function() {
-    setInterval(capNhatThoiGian, 1000); capNhatThoiGian();
-    taiDuLieuTrangChu();
-    if (document.getElementById('admin-panel')) taiKetQuaTuSheets();
-    if (document.getElementById('ket-qua-gv') && document.getElementById('ket-qua-gv').classList.contains('active')) taiKetQuaGiaoVien();
-};
-
-// ==========================================
-// 8. TIỆN ÍCH: TẢI DANH MỤC VÀ XUẤT WORD
+// 7. TIỆN ÍCH: TẢI DANH MỤC & XUẤT WORD
 // ==========================================
 function moTrangTinh() {
     if (SPREADSHEET_URL.includes("LINK_GOOGLE_SHEETS")) {
@@ -334,10 +330,8 @@ function xuatFileWord(loaiPhieu) {
         <head><meta charset='utf-8'></head>
         <body style="font-family: 'Times New Roman', serif;">
             <table width="100%" style="text-align: center; font-size: 13pt;">
-                <tr>
-                    <td width="40%">SỞ GIÁO DỤC VÀ ĐÀO TẠO<br><strong>TRƯỜNG THPT BÌNH THỦY</strong><br><hr style="width: 50%;"></td>
-                    <td width="60%"><strong>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM<br>Độc lập - Tự do - Hạnh phúc</strong><br><hr style="width: 40%;"></td>
-                </tr>
+                <tr><td width="40%">SỞ GIÁO DỤC VÀ ĐÀO TẠO<br><strong>TRƯỜNG THPT BÌNH THỦY</strong><br><hr style="width: 50%;"></td>
+                    <td width="60%"><strong>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM<br>Độc lập - Tự do - Hạnh phúc</strong><br><hr style="width: 40%;"></td></tr>
             </table>
             <br><h2 style="text-align: center; font-size: 18pt;">${title}</h2>
             <div style="line-height: 1.5;">${content}</div><br><br>
@@ -354,3 +348,13 @@ function xuatFileWord(loaiPhieu) {
     link.href = url; link.download = `Phieu_${loaiPhieu}_${Date.now()}.doc`;
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
 }
+
+// ==========================================
+// 8. KHỞI CHẠY TỰ ĐỘNG
+// ==========================================
+window.onload = function() {
+    setInterval(capNhatThoiGian, 1000); capNhatThoiGian();
+    taiDuLieuTrangChu();
+    if (document.getElementById('admin-panel')) taiKetQuaTuSheets();
+    if (document.getElementById('ket-qua-gv') && document.getElementById('ket-qua-gv').classList.contains('active')) taiKetQuaGiaoVien();
+};
