@@ -8,7 +8,7 @@
 </head>
 <body>
   <header class="school-header">
-    <h1>TRƯỜNG THPT BÌNH THỦY</h1>
+    <h2>TRƯỜNG THPT BÌNH THỦY</h2>
     <p>Cổng Đăng Ký Thiết bị & Phòng học Bộ môn dành cho Giáo viên</p>
   </header>
 
@@ -22,6 +22,7 @@
   </nav>
 
   <main class="container">
+    <!-- Tab 1: Trang Chủ -->
     <div id="trang-chu" class="tab-content active">
       <div class="dashboard-row">
         <div class="status-card">
@@ -33,10 +34,10 @@
           <ul id="danh-sach-tb"><li>Đang đồng bộ dữ liệu...</li></ul>
           <button class="btn-outline" onclick="taiDanhMucThietBi()">📥 Tải danh mục thiết bị (.xlsx)</button>
         </div>
-        </div>
       </div>
     </div>
-<!-- Tab 2: Đăng Ký Mượn Thiết Bị -->
+
+    <!-- Tab 2: Mượn TB -->
     <div id="muon-tb" class="tab-content">
       <h3>ĐĂNG KÝ MƯỢN THIẾT BỊ DẠY HỌC</h3>
       <form id="formMuonTB" class="app-form">
@@ -50,12 +51,11 @@
         
         <label>Ngày mượn thực hành:</label>
         <input type="date" id="ngayMuonTB" required>
-        
         <button type="button" onclick="guiYeuCau('muonThietBi')">Xác Nhận Mượn</button>
       </form>
     </div>
 
-    <!-- Tab 3: Đăng Ký Phòng Bộ Môn -->
+    <!-- Tab 3: Mượn Phòng -->
     <div id="muon-phong" class="tab-content">
       <h3>ĐĂNG KÝ SỬ DỤNG PHÒNG BỘ MÔN</h3>
       <form id="formMuonPhong" class="app-form">
@@ -82,6 +82,8 @@
         <button type="button" class="btn-orange" onclick="guiYeuCau('datPhong')">Xác Nhận Đặt Phòng</button>
       </form>
     </div>
+
+    <!-- Tab 4: Báo Hỏng -->
     <div id="bao-hong" class="tab-content">
       <h3>BÁO CÁO SỰ CỐ THIẾT BỊ / PHÒNG HỌC</h3>
       <form id="formBaoHong" class="app-form">
@@ -89,11 +91,15 @@
         <input type="text" id="viTriSuCo" required placeholder="Ví dụ: Máy tính số 12">
         <label>Chi tiết tình trạng lỗi:</label>
         <input type="text" id="moTaSuCo" required placeholder="Mô tả hiện tượng hỏng...">
-        <button type="button" class="btn-red" onclick="guiYeuCau('baoHong')">Gửi Báo Hỏng Sự Cố</button>
-        <button type="button" style="flex: 1; background-color: #17a2b8;" onclick="xuatFileWord('baoHong')">📄 Xuất & In Phiếu Word</button>
+        
+        <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn-red" style="flex: 1;" onclick="guiYeuCau('baoHong')">Gửi Lên Hệ Thống</button>
+            <button type="button" style="flex: 1; background-color: #17a2b8;" onclick="xuatFileWord('baoHong')">📄 Xuất & In Phiếu</button>
+        </div>
       </form>
     </div>
 
+    <!-- Tab 5: Mua Sắm -->
     <div id="mua-sam" class="tab-content">
       <h3>ĐỀ XUẤT MUA SẮM VẬT TƯ THIẾT BỊ</h3>
       <form id="formMuaSam" class="app-form">
@@ -103,11 +109,15 @@
         <input type="number" id="soLuongMuaSam" required min="1">
         <label>Lý do mua sắm:</label>
         <input type="text" id="lyDoMuaSam" required placeholder="Phục vụ bài thực hành nào...">
-        <button type="button" class="btn-green" onclick="guiYeuCau('muaSam')">Gửi Đề Xuất</button>
-        <button type="button" style="flex: 1; background-color: #17a2b8;" onclick="xuatFileWord('muaSam')">📄 Xuất & In Phiếu Word</button>
+        
+        <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn-green" style="flex: 1;" onclick="guiYeuCau('muaSam')">Gửi Lên Hệ Thống</button>
+            <button type="button" style="flex: 1; background-color: #17a2b8;" onclick="xuatFileWord('muaSam')">📄 Xuất & In Phiếu</button>
+        </div>
       </form>
     </div>
 
+    <!-- Tab 6: Kết quả GV -->
     <div id="ket-qua-gv" class="tab-content">
       <h3>TIẾN ĐỘ PHÊ DUYỆT YÊU CẦU</h3>
       <div class="table-container">
@@ -122,7 +132,7 @@
             </tr>
           </thead>
           <tbody id="table-ket-qua-gv">
-            <!-- Bảng kết quả chỉ xem dành cho GV -->
+            <!-- Bảng kết quả -->
           </tbody>
         </table>
       </div>
