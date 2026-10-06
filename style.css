@@ -15,7 +15,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-
 
 .app-form { max-width: 500px; margin: 0 auto; }
 label { display: block; margin-top: 15px; font-weight: 600; font-size: 14px; }
-input, select, button { width: 100%; padding: 12px; margin-top: 6px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+input, select, textarea, button { width: 100%; padding: 12px; margin-top: 6px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; font-family: inherit; }
 
 button { background-color: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
 button:hover { background-color: #0056b3; }
@@ -51,5 +51,4 @@ button:hover { background-color: #0056b3; }
 .app-footer { background-color: #343a40; color: white; text-align: center; padding: 20px; margin-top: 40px; font-size: 14px; }
 .app-footer p { margin: 5px 0; }
 .app-footer strong { color: #ffc107; }
-
 #real-time-clock { margin-bottom: 20px; font-size: 15px; font-weight: bold; background: rgba(0, 0, 0, 0.3); border: 1px solid #555; display: inline-block; padding: 10px 25px; border-radius: 20px; line-height: 1.5; color: #fff;}
