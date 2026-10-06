@@ -2,7 +2,8 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-
 .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
 
 .school-header { background: linear-gradient(135deg, #0056b3, #007bff); color: white; text-align: center; padding: 25px 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-.school-header h2 { margin: 0; font-size: 24px; }
+.school-header h2 { margin: 0; font-size: 26px; }
+.school-header h2 { margin: 0; font-size: 20px; }
 .school-header p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
 
 .tab-navigation { display: flex; justify-content: center; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; }
