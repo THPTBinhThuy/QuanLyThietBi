@@ -4,7 +4,6 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwEZuJai2Fik6poHkc_Ef7UtN67vAFKpBdvnFdopWVLM8J6rdheVw4msrlUbUTrJA1m2A/exec";
 const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/10Q6A2YD9AgJn3AdbBrpdhg-cDIvMK04JoJJv4Cf3fGo/edit?usp=sharing";
 
-
 // ==========================================
 // 2. ĐỒNG HỒ & THỜI GIAN BIỂU
 // ==========================================
@@ -90,7 +89,7 @@ function renderDanhSachMuon() {
 }
 
 // ==========================================
-// 4. AUTO CẬP NHẬT TRẠNG THÁI & BƠM DỮ LIỆU & NHẮC VIỆC
+// 4. AUTO CẬP NHẬT TRẠNG THÁI & BƠM DỮ LIỆU
 // ==========================================
 function taiDuLieuTrangChu() {
     const ulPhong = document.getElementById('danh-sach-phong');
@@ -153,23 +152,34 @@ function taiDuLieuTrangChu() {
             ulPhong.innerHTML += `<li><span class="badge ${badge}">${status}</span> <strong>${p.maPhong}</strong>: ${p.tenPhong}${gvInfo}</li>`;
         });
 
-        // B. THIẾT BỊ
+        // B. THIẾT BỊ (CÓ GIỚI HẠN HIỂN THỊ 5 MÓN ĐẦU TIÊN)
         ulTB.innerHTML = "";
-        if (dashboardData.thietBi.length === 0) ulTB.innerHTML = "<li>Chưa có dữ liệu thiết bị.</li>";
+        if (dashboardData.thietBi.length === 0) {
+            ulTB.innerHTML = "<li>Chưa có dữ liệu thiết bị.</li>";
+        } else {
+            dashboardData.thietBi.forEach((tb, index) => {
+                let slBanDau = parseInt(tb.soLuong) || 0;
+                let slDaMuon = 0;
+                approvedToday.forEach(req => {
+                    if (req.loaiYeuCau === "Mượn Thiết Bị" && req.chiTiet.includes(tb.maTB)) slDaMuon += 1; 
+                });
 
-        dashboardData.thietBi.forEach(tb => {
-            let slBanDau = parseInt(tb.soLuong) || 0;
-            let slDaMuon = 0;
-            approvedToday.forEach(req => {
-                if (req.loaiYeuCau === "Mượn Thiết Bị" && req.chiTiet.includes(tb.maTB)) slDaMuon += 1; 
+                let slConLai = slBanDau - slDaMuon;
+                let donVi = tb.donVi ? tb.donVi : '';
+                let status = slConLai > 0 ? slConLai + ' ' + donVi : 'Hết / Đang mượn';
+                let badge = slConLai > 0 ? "badge-green" : "badge-red";
+                
+                // Ẩn đi các thiết bị từ vị trí số 6 trở đi
+                let hiddenClass = index >= 5 ? 'class="tb-hidden" style="display: none;"' : '';
+                ulTB.innerHTML += `<li ${hiddenClass}><span class="badge ${badge}">${status}</span> <strong>${tb.maTB}</strong>: ${tb.tenTB}</li>`;
             });
 
-            let slConLai = slBanDau - slDaMuon;
-            let donVi = tb.donVi ? tb.donVi : '';
-            let status = slConLai > 0 ? slConLai + ' ' + donVi : 'Hết / Đang mượn';
-            let badge = slConLai > 0 ? "badge-green" : "badge-red";
-            ulTB.innerHTML += `<li><span class="badge ${badge}">${status}</span> <strong>${tb.maTB}</strong>: ${tb.tenTB}</li>`;
-        });
+            // Nếu danh sách lớn hơn 5 món, hiển thị nút Xem Thêm
+            if (dashboardData.thietBi.length > 5) {
+                let nutXemThem = `<li style="justify-content: center; cursor: pointer; color: #0056b3; font-weight: bold; border-bottom: none; background: #f8f9fa; border-radius: 5px; margin-top: 5px;" onclick="toggleXemThemTB(this)">⬇️ Xem thêm (${dashboardData.thietBi.length - 5} thiết bị khác)...</li>`;
+                ulTB.innerHTML += nutXemThem;
+            }
+        }
 
         // C. BƠM DỮ LIỆU VÀO FORM 
         const selectPhong = document.getElementById('maPhong');
@@ -212,6 +222,24 @@ function taiDuLieuTrangChu() {
     });
 }
 
+// HÀM MỚI: Bật tắt hiển thị thiết bị
+function toggleXemThemTB(btn) {
+    let hiddenItems = document.querySelectorAll('.tb-hidden');
+    if (hiddenItems.length === 0) return;
+    
+    let dangAn = hiddenItems[0].style.display === 'none';
+    
+    hiddenItems.forEach(item => {
+        item.style.display = dangAn ? '' : 'none'; // Trả về hiển thị CSS mặc định hoặc ẩn đi
+    });
+    
+    if (dangAn) {
+        btn.innerHTML = "⬆️ Thu gọn danh sách";
+    } else {
+        btn.innerHTML = `⬇️ Xem thêm (${hiddenItems.length} thiết bị khác)...`;
+    }
+}
+
 // ==========================================
 // 5. TẢI BẢNG KẾT QUẢ
 // ==========================================
@@ -230,7 +258,6 @@ function taiKetQuaTuSheets() {
                 btnAdmin = `<button class="action-btn btn-duyet" onclick="xuLyAdmin('${item.id}', 'Đã Duyệt')">Duyệt</button>
                             <button class="action-btn btn-tuchoi" onclick="xuLyAdmin('${item.id}', 'Từ chối')">Từ chối</button>`;
             } else if (item.trangThai === "Đã Duyệt" && item.loaiYeuCau === "Mượn Thiết Bị") {
-                // Thêm nút Thu Hồi dành riêng cho Thiết Bị
                 btnAdmin = `<button class="action-btn" style="background-color: #17a2b8;" onclick="thuHoiThietBi('${item.id}')">Thu hồi TB</button>`;
             }
 
@@ -254,6 +281,7 @@ function taiKetQuaGiaoVien() {
         });
     });
 }
+
 // ==========================================
 // 6. GỬI YÊU CẦU & XỬ LÝ ADMIN
 // ==========================================
@@ -273,8 +301,6 @@ function guiYeuCau(loaiHanhDong) {
         data.ngayDat = document.getElementById('ngayDatPhong').value; 
         data.baiDay = document.getElementById('baiDayPhong').value;
         data.lopDay = document.getElementById('lopDayPhong') ? document.getElementById('lopDayPhong').value : "";
-        
-        // Tách riêng Buổi và Tiết gửi đi
         let selBuoi = document.getElementById('buoiHoc');
         data.buoiHoc = selBuoi ? selBuoi.value : "Sáng"; 
         data.tietHoc = document.getElementById('tietHoc').value;
@@ -295,6 +321,26 @@ function guiYeuCau(loaiHanhDong) {
     });
 }
 
+function xuLyAdmin(id, hanhDong) {
+    if(confirm(`Xác nhận ${hanhDong} yêu cầu ID: ${id}?`)) {
+        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'adminDuyet', id: id, ketQua: hanhDong }) })
+        .then(() => { alert("Đã xử lý! Đang làm mới bảng..."); setTimeout(taiKetQuaTuSheets, 1500); taiDuLieuTrangChu(); });
+    }
+}
+
+function thuHoiThietBi(id) {
+    let nowStr = new Date().toLocaleDateString('vi-VN');
+    let ngayTra = prompt(`Đang làm thủ tục thu hồi đơn ID: ${id}\nNhập NGÀY TRẢ thực tế:`, nowStr);
+    if (!ngayTra) return;
+    
+    let tinhTrang = prompt("Nhập TÌNH TRẠNG thiết bị (Bình thường / Thiếu / Hỏng...):", "Bình thường");
+    if (!tinhTrang) return;
+
+    if(confirm(`Chốt thu hồi thiết bị? Số lượng trong kho sẽ được cộng lại tương ứng.`)) {
+        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'adminTraTB', id: id, ngayTra: ngayTra, tinhTrang: tinhTrang }) })
+        .then(() => { alert("Đã cập nhật trạng thái thu hồi thành công!"); setTimeout(taiKetQuaTuSheets, 1500); taiDuLieuTrangChu(); });
+    }
+}
 
 // ==========================================
 // 7. TIỆN ÍCH: TẢI DANH MỤC & XUẤT WORD
@@ -310,7 +356,8 @@ function taiDanhMucThietBi() {
         window.location.href = `https://docs.google.com/spreadsheets/d/${urlParts[urlParts.indexOf('d') + 1]}/export?format=xlsx`;
     } catch (error) { alert("Link CSDL không hợp lệ!"); }
 }
-function xuatFileWord(loaiPhieu) { /* Giữ nguyên hàm xuất Word */ }
+
+function xuatFileWord(loaiPhieu) { /* Hàm xuất Word không thay đổi */ }
 
 // ==========================================
 // 8. KHỞI CHẠY TỰ ĐỘNG
