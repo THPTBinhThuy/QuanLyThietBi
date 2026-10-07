@@ -1,10 +1,10 @@
 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; color: #333; }
 .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
 
-.school-header { background: linear-gradient(135deg, #0056b3, #007bff); color: white; text-align: center; padding: 25px 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.school-header { background: linear-gradient(135deg, #0056b3, #007bff); color: white; text-align: center; padding: 15x 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .school-header h2 { margin: 0; font-size: 26px; }
 .school-header h2 { margin: 0; font-size: 20px; }
-.school-header p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
+.school-header p { margin: 4px 0 0; font-size: 14px; opacity: 0.9; }
 
 .tab-navigation { display: flex; justify-content: center; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; }
 .tab-btn { background: none; border: none; padding: 15px 20px; font-size: 15px; color: #555; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; white-space: nowrap; }
@@ -52,4 +52,4 @@ button:hover { background-color: #0056b3; }
 .app-footer { background-color: #343a40; color: white; text-align: center; padding: 20px; margin-top: 40px; font-size: 14px; }
 .app-footer p { margin: 5px 0; }
 .app-footer strong { color: #ffc107; }
-#real-time-clock { margin-bottom: 20px; font-size: 15px; font-weight: bold; background: rgba(0, 0, 0, 0.3); border: 1px solid #555; display: inline-block; padding: 10px 25px; border-radius: 20px; line-height: 1.5; color: #fff;}
+#real-time-clock { margin-bottom: 15px; font-size: 15px; font-weight: bold; background: rgba(0, 0, 0, 0.3); border: 0.5px solid #555; display: inline-block; padding: 10px 15px; border-radius: 20px; line-height: 1; color: #fff;}
