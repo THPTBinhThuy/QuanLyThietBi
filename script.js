@@ -263,9 +263,12 @@ function guiYeuCau(loaiHanhDong) {
         data.maTB = document.getElementById('maTB').value; 
         if(!data.maTB) return alert("Vui lòng chọn ít nhất 1 thiết bị!");
         data.ngayMuon = document.getElementById('ngayMuonTB').value;
+        data.ngayTra = document.getElementById('ngayTraTB').value;
+        data.baiHoc = document.getElementById('baiHocTB').value;
     } else if (loaiHanhDong === 'datPhong') {
         data.tenGV = document.getElementById('gvPhong').value; 
         data.maPhong = document.getElementById('maPhong').value; 
+        data.baiDay = document.getElementById('baiDayPhong').value;
         data.ngayDat = document.getElementById('ngayDatPhong').value; 
         let selBuoi = document.getElementById('buoiHoc');
         data.tietHoc = (selBuoi ? selBuoi.value : "Buổi Sáng") + " | Tiết: " + document.getElementById('tietHoc').value;
@@ -284,13 +287,6 @@ function guiYeuCau(loaiHanhDong) {
         document.querySelectorAll('.app-form').forEach(f => f.reset()); 
         danhSachMuonTB = []; renderDanhSachMuon();
     });
-}
-
-function xuLyAdmin(id, hanhDong) {
-    if(confirm(`Xác nhận ${hanhDong} yêu cầu ID: ${id}?`)) {
-        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'adminDuyet', id: id, ketQua: hanhDong }) })
-        .then(() => { alert("Đã xử lý! Đang làm mới bảng..."); setTimeout(taiKetQuaTuSheets, 1500); taiDuLieuTrangChu(); });
-    }
 }
 
 // ==========================================
