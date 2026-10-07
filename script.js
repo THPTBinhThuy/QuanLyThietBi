@@ -254,7 +254,6 @@ function taiKetQuaGiaoVien() {
         });
     });
 }
-
 // ==========================================
 // 6. GỬI YÊU CẦU & XỬ LÝ ADMIN
 // ==========================================
@@ -274,8 +273,11 @@ function guiYeuCau(loaiHanhDong) {
         data.ngayDat = document.getElementById('ngayDatPhong').value; 
         data.baiDay = document.getElementById('baiDayPhong').value;
         data.lopDay = document.getElementById('lopDayPhong') ? document.getElementById('lopDayPhong').value : "";
+        
+        // Tách riêng Buổi và Tiết gửi đi
         let selBuoi = document.getElementById('buoiHoc');
-        data.tietHoc = (selBuoi ? selBuoi.value : "Buổi Sáng") + " | Tiết: " + document.getElementById('tietHoc').value;
+        data.buoiHoc = selBuoi ? selBuoi.value : "Sáng"; 
+        data.tietHoc = document.getElementById('tietHoc').value;
     } else if (loaiHanhDong === 'baoHong') {
         data.viTri = document.getElementById('viTriSuCo').value; 
         data.moTa = document.getElementById('moTaSuCo').value;
@@ -293,35 +295,6 @@ function guiYeuCau(loaiHanhDong) {
     });
 }
 
-function xuLyAdmin(id, hanhDong) {
-    if(confirm(`Xác nhận ${hanhDong} yêu cầu ID: ${id}?`)) {
-        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'adminDuyet', id: id, ketQua: hanhDong }) })
-        .then(() => { alert("Đã xử lý! Đang làm mới bảng..."); setTimeout(taiKetQuaTuSheets, 1500); taiDuLieuTrangChu(); });
-    }
-}
-
-function thuHoiThietBi(id) {
-    let nowStr = new Date().toLocaleDateString('vi-VN');
-    let ngayTra = prompt(`Đang làm thủ tục thu hồi đơn ID: ${id}\nNhập NGÀY TRẢ thực tế:`, nowStr);
-    if (!ngayTra) return;
-    
-    let tinhTrang = prompt("Nhập TÌNH TRẠNG thiết bị (Bình thường / Thiếu / Hỏng...):", "Bình thường");
-    if (!tinhTrang) return;
-
-    if(confirm(`Chốt thu hồi thiết bị? Số lượng trong kho sẽ được cộng lại tương ứng.`)) {
-        fetch(WEB_APP_URL, { 
-            method: "POST", 
-            mode: "no-cors", 
-            headers: { "Content-Type": "application/json" }, 
-            body: JSON.stringify({ action: 'adminTraTB', id: id, ngayTra: ngayTra, tinhTrang: tinhTrang }) 
-        })
-        .then(() => { 
-            alert("Đã cập nhật trạng thái thu hồi thành công!"); 
-            setTimeout(taiKetQuaTuSheets, 1500); 
-            taiDuLieuTrangChu(); 
-        });
-    }
-}
 
 // ==========================================
 // 7. TIỆN ÍCH: TẢI DANH MỤC & XUẤT WORD
