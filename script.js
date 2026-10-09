@@ -56,33 +56,22 @@ function chuyenTab(event, tabId) {
 }
 
 let danhSachMuonTB = [];
-
 function themThietBiVaoDanhSach() {
     let inputTB = document.getElementById('inputTimTB');
     let val = inputTB.value.trim();
     if(!val) return;
-    
     if(!danhSachMuonTB.includes(val)) danhSachMuonTB.push(val);
-    inputTB.value = ""; 
-    renderDanhSachMuon();
+    inputTB.value = ""; renderDanhSachMuon();
 }
-
-function xoaThietBi(index) {
-    danhSachMuonTB.splice(index, 1);
-    renderDanhSachMuon();
-}
-
+function xoaThietBi(index) { danhSachMuonTB.splice(index, 1); renderDanhSachMuon(); }
 function renderDanhSachMuon() {
-    let box = document.getElementById('boxDanhSachTB');
-    let maTBInput = document.getElementById('maTB'); 
+    let box = document.getElementById('boxDanhSachTB'), maTBInput = document.getElementById('maTB'); 
     if(danhSachMuonTB.length === 0) {
         if(box) box.innerHTML = '<em style="color: #888; font-size: 13px;">Chưa chọn thiết bị nào...</em>';
         if(maTBInput) maTBInput.value = ""; return;
     }
     let html = '<ul style="padding-left: 0; list-style: none; margin: 0; font-size: 14px;">';
-    danhSachMuonTB.forEach((tb, i) => {
-        html += `<li style="margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">${tb} <span style="color: red; cursor: pointer; float: right; font-weight: bold;" onclick="xoaThietBi(${i})">❌ Xóa</span></li>`;
-    });
+    danhSachMuonTB.forEach((tb, i) => { html += `<li style="margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">${tb} <span style="color: red; cursor: pointer; float: right; font-weight: bold;" onclick="xoaThietBi(${i})">❌ Xóa</span></li>`; });
     html += '</ul>';
     if(box) box.innerHTML = html;
     if(maTBInput) maTBInput.value = danhSachMuonTB.join(", ");
@@ -92,26 +81,20 @@ function renderDanhSachMuon() {
 // 4. AUTO CẬP NHẬT TRẠNG THÁI & BƠM DỮ LIỆU
 // ==========================================
 function taiDuLieuTrangChu() {
-    const ulPhong = document.getElementById('danh-sach-phong');
-    const ulTB = document.getElementById('danh-sach-tb');
+    const ulPhong = document.getElementById('danh-sach-phong'), ulTB = document.getElementById('danh-sach-tb');
     if (!ulPhong || !ulTB) return; 
 
     ulPhong.innerHTML = "<li>Đang phân tích lịch đăng ký...</li>";
     ulTB.innerHTML = "<li>Đang kiểm đếm tồn kho...</li>";
 
-    Promise.all([
-        fetch(WEB_APP_URL + "?action=getDashboard").then(res => res.json()),
-        fetch(WEB_APP_URL + "?action=getKetQua").then(res => res.json())
-    ])
+    Promise.all([fetch(WEB_APP_URL + "?action=getDashboard").then(res => res.json()), fetch(WEB_APP_URL + "?action=getKetQua").then(res => res.json())])
     .then(([dashboardData, ketQuaData]) => {
         if (!dashboardData.phong) dashboardData.phong = [];
         if (!dashboardData.thietBi) dashboardData.thietBi = [];
         if (!ketQuaData) ketQuaData = [];
 
         const now = new Date();
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const dd = String(now.getDate()).padStart(2, '0');
+        const yyyy = now.getFullYear(), mm = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
         const todayStr = `${yyyy}-${mm}-${dd}`; 
 
         const tongPhut = now.getHours() * 60 + now.getMinutes();
@@ -152,36 +135,25 @@ function taiDuLieuTrangChu() {
             ulPhong.innerHTML += `<li><span class="badge ${badge}">${status}</span> <strong>${p.maPhong}</strong>: ${p.tenPhong}${gvInfo}</li>`;
         });
 
-        // B. THIẾT BỊ (CÓ GIỚI HẠN HIỂN THỊ 5 MÓN ĐẦU TIÊN)
+        // B. THIẾT BỊ (CHỈ HIỆN 5 MÓN)
         ulTB.innerHTML = "";
         if (dashboardData.thietBi.length === 0) {
             ulTB.innerHTML = "<li>Chưa có dữ liệu thiết bị.</li>";
         } else {
             dashboardData.thietBi.forEach((tb, index) => {
-                let slBanDau = parseInt(tb.soLuong) || 0;
-                let slDaMuon = 0;
-                approvedToday.forEach(req => {
-                    if (req.loaiYeuCau === "Mượn Thiết Bị" && req.chiTiet.includes(tb.maTB)) slDaMuon += 1; 
-                });
-
-                let slConLai = slBanDau - slDaMuon;
-                let donVi = tb.donVi ? tb.donVi : '';
-                let status = slConLai > 0 ? slConLai + ' ' + donVi : 'Hết / Đang mượn';
-                let badge = slConLai > 0 ? "badge-green" : "badge-red";
-                
-                // Ẩn đi các thiết bị từ vị trí số 6 trở đi
+                let slBanDau = parseInt(tb.soLuong) || 0, slDaMuon = 0;
+                approvedToday.forEach(req => { if (req.loaiYeuCau === "Mượn Thiết Bị" && req.chiTiet.includes(tb.maTB)) slDaMuon += 1; });
+                let slConLai = slBanDau - slDaMuon, donVi = tb.donVi ? tb.donVi : '';
+                let status = slConLai > 0 ? slConLai + ' ' + donVi : 'Hết / Đang mượn', badge = slConLai > 0 ? "badge-green" : "badge-red";
                 let hiddenClass = index >= 5 ? 'class="tb-hidden" style="display: none;"' : '';
                 ulTB.innerHTML += `<li ${hiddenClass}><span class="badge ${badge}">${status}</span> <strong>${tb.maTB}</strong>: ${tb.tenTB}</li>`;
             });
-
-            // Nếu danh sách lớn hơn 5 món, hiển thị nút Xem Thêm
             if (dashboardData.thietBi.length > 5) {
-                let nutXemThem = `<li style="justify-content: center; cursor: pointer; color: #0056b3; font-weight: bold; border-bottom: none; background: #f8f9fa; border-radius: 5px; margin-top: 5px;" onclick="toggleXemThemTB(this)">⬇️ Xem thêm (${dashboardData.thietBi.length - 5} thiết bị khác)...</li>`;
-                ulTB.innerHTML += nutXemThem;
+                ulTB.innerHTML += `<li style="justify-content: center; cursor: pointer; color: #0056b3; font-weight: bold; border-bottom: none; background: #f8f9fa; border-radius: 5px; margin-top: 5px;" onclick="toggleXemThemTB(this)">⬇️ Xem thêm (${dashboardData.thietBi.length - 5} thiết bị khác)...</li>`;
             }
         }
 
-        // C. BƠM DỮ LIỆU VÀO FORM 
+        // C. BƠM FORM 
         const selectPhong = document.getElementById('maPhong');
         if (selectPhong && selectPhong.tagName === 'SELECT') {
             selectPhong.innerHTML = '<option value="">-- Chọn phòng bộ môn --</option>';
@@ -193,51 +165,42 @@ function taiDuLieuTrangChu() {
             dashboardData.thietBi.forEach(tb => { dataTBList.innerHTML += `<option value="${tb.maTB} - ${tb.tenTB}">`; });
         }
 
-        // D. NHẮC VIỆC (ADMIN)
+        // D. NHẮC VIỆC (BỔ SUNG HÔM NAY)
         const ulNhacViec = document.getElementById('danh-sach-nhac-viec');
         if (ulNhacViec) {
             ulNhacViec.innerHTML = "";
-            const tomorrow = new Date(now);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const t_yyyy = tomorrow.getFullYear();
-            const t_mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-            const t_dd = String(tomorrow.getDate()).padStart(2, '0');
+            const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1);
+            const t_yyyy = tomorrow.getFullYear(), t_mm = String(tomorrow.getMonth() + 1).padStart(2, '0'), t_dd = String(tomorrow.getDate()).padStart(2, '0');
             const tomorrowStr = `${t_yyyy}-${t_mm}-${t_dd}`; 
 
             const pendingReqs = ketQuaData.filter(item => item.trangThai === "Chờ duyệt" || !item.trangThai);
+            const todaySchedule = ketQuaData.filter(item => item.trangThai === "Đã Duyệt" && (item.chiTiet || "").includes(todayStr));
             const tomorrowReqs = ketQuaData.filter(item => item.trangThai === "Đã Duyệt" && (item.chiTiet || "").includes(tomorrowStr));
 
             if (pendingReqs.length > 0) ulNhacViec.innerHTML += `<li style="color: #dc3545; font-weight: bold; background: #ffe6e6; padding: 10px; border-radius: 5px;">🚨 BẠN CÓ ${pendingReqs.length} YÊU CẦU MỚI CHỜ DUYỆT!</li>`;
             else ulNhacViec.innerHTML += `<li style="color: #6c757d;">✅ Không có yêu cầu nào đang chờ duyệt.</li>`;
 
+            // Thông báo Hôm Nay
+            ulNhacViec.innerHTML += `<li style="margin-top: 15px; font-weight: bold; color: #d32f2f;">🔥 LỊCH SỬ DỤNG HÔM NAY (${dd}/${mm}):</li>`;
+            if (todaySchedule.length > 0) todaySchedule.forEach(req => { ulNhacViec.innerHTML += `<li style="border-left: 3px solid #dc3545; margin-left: 10px; padding-left: 10px; margin-bottom: 5px;"><strong>${req.tenGV}</strong> | ${req.loaiYeuCau}: ${req.chiTiet}</li>`; });
+            else ulNhacViec.innerHTML += `<li style="color: #28a745; margin-left: 10px;">Hôm nay không có lịch mượn phòng/thiết bị nào.</li>`;
+
+            // Thông báo Ngày Mai
             ulNhacViec.innerHTML += `<li style="margin-top: 15px; font-weight: bold; color: #0056b3;">📅 CẦN CHUẨN BỊ CHO NGÀY MAI (${t_dd}/${t_mm}):</li>`;
             if (tomorrowReqs.length > 0) tomorrowReqs.forEach(req => { ulNhacViec.innerHTML += `<li style="border-left: 3px solid #007bff; margin-left: 10px; padding-left: 10px; margin-bottom: 5px;"><strong>${req.tenGV}</strong> | ${req.loaiYeuCau}: ${req.chiTiet}</li>`; });
-            else ulNhacViec.innerHTML += `<li style="color: #28a745; margin-left: 10px;">Chưa có lịch mượn phòng/thiết bị nào cho ngày mai.</li>`;
+            else ulNhacViec.innerHTML += `<li style="color: #6c757d; margin-left: 10px;">Chưa có lịch đăng ký cho ngày mai.</li>`;
         }
     })
-    .catch(err => {
-        console.error("Lỗi:", err);
-        ulPhong.innerHTML = "<li style='color:red;'>Lỗi tải dữ liệu.</li>";
-        ulTB.innerHTML = "<li style='color:red;'>Lỗi tải dữ liệu.</li>";
-    });
+    .catch(err => { console.error(err); });
 }
 
-// HÀM MỚI: Bật tắt hiển thị thiết bị
 function toggleXemThemTB(btn) {
     let hiddenItems = document.querySelectorAll('.tb-hidden');
     if (hiddenItems.length === 0) return;
-    
     let dangAn = hiddenItems[0].style.display === 'none';
-    
-    hiddenItems.forEach(item => {
-        item.style.display = dangAn ? '' : 'none'; // Trả về hiển thị CSS mặc định hoặc ẩn đi
-    });
-    
-    if (dangAn) {
-        btn.innerHTML = "⬆️ Thu gọn danh sách";
-    } else {
-        btn.innerHTML = `⬇️ Xem thêm (${hiddenItems.length} thiết bị khác)...`;
-    }
+    hiddenItems.forEach(item => { item.style.display = dangAn ? '' : 'none'; });
+    if (dangAn) btn.innerHTML = "⬆️ Thu gọn danh sách";
+    else btn.innerHTML = `⬇️ Xem thêm (${hiddenItems.length} thiết bị khác)...`;
 }
 
 // ==========================================
@@ -343,7 +306,7 @@ function thuHoiThietBi(id) {
 }
 
 // ==========================================
-// 7. TIỆN ÍCH: TẢI DANH MỤC & XUẤT WORD
+// 7. TIỆN ÍCH
 // ==========================================
 function moTrangTinh() {
     if (SPREADSHEET_URL.includes("LINK_GOOGLE_SHEETS")) { alert("Vui lòng khai báo link Google Sheets gốc ở đầu file script.js!"); return; }
@@ -356,8 +319,6 @@ function taiDanhMucThietBi() {
         window.location.href = `https://docs.google.com/spreadsheets/d/${urlParts[urlParts.indexOf('d') + 1]}/export?format=xlsx`;
     } catch (error) { alert("Link CSDL không hợp lệ!"); }
 }
-
-function xuatFileWord(loaiPhieu) { /* Hàm xuất Word không thay đổi */ }
 
 // ==========================================
 // 8. KHỞI CHẠY TỰ ĐỘNG
