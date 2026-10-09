@@ -93,9 +93,39 @@ function taiDuLieuTrangChu() {
         if (!dashboardData.thietBi) dashboardData.thietBi = [];
         if (!ketQuaData) ketQuaData = [];
 
+        // TẠO RADAR QUÉT MỌI ĐỊNH DẠNG NGÀY THÁNG
         const now = new Date();
-        const yyyy = now.getFullYear(), mm = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
-        const todayStr = `${yyyy}-${mm}-${dd}`; 
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        
+        // Quét mọi khả năng định dạng của Hôm nay
+        const todayFormats = [
+            `${yyyy}-${mm}-${dd}`, // 2026-10-09
+            `${dd}/${mm}/${yyyy}`, // 09/10/2026
+            `${mm}/${dd}/${yyyy}`, // 10/09/2026
+            `${dd}-${mm}-${yyyy}`  // 09-10-2026
+        ];
+
+        const tomorrow = new Date(now); 
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const t_yyyy = tomorrow.getFullYear();
+        const t_mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+        const t_dd = String(tomorrow.getDate()).padStart(2, '0');
+        
+        // Quét mọi khả năng định dạng của Ngày mai
+        const tomorrowFormats = [
+            `${t_yyyy}-${t_mm}-${t_dd}`,
+            `${t_dd}/${t_mm}/${t_yyyy}`,
+            `${t_mm}/${t_dd}/${t_yyyy}`,
+            `${t_dd}-${t_mm}-${t_yyyy}`
+        ];
+
+        // Hàm kiểm tra xem chi tiết có chứa bất kỳ định dạng ngày nào không
+        const kiemTraKhopNgay = (chiTiet, mangDinhDang) => {
+            if (!chiTiet) return false;
+            return mangDinhDang.some(dinhDang => chiTiet.includes(dinhDang));
+        };
 
         const tongPhut = now.getHours() * 60 + now.getMinutes();
         let currentTiet = -1, currentBuoi = "";
@@ -108,7 +138,8 @@ function taiDuLieuTrangChu() {
             }
         }
 
-        const approvedToday = ketQuaData.filter(item => item.trangThai === "Đã Duyệt" && (item.chiTiet || "").includes(todayStr));
+        // Lọc yêu cầu ĐÃ DUYỆT cho Hôm nay
+        const approvedToday = ketQuaData.filter(item => item.trangThai === "Đã Duyệt" && kiemTraKhopNgay(item.chiTiet, todayFormats));
 
         // A. PHÒNG BỘ MÔN
         ulPhong.innerHTML = "";
@@ -165,17 +196,15 @@ function taiDuLieuTrangChu() {
             dashboardData.thietBi.forEach(tb => { dataTBList.innerHTML += `<option value="${tb.maTB} - ${tb.tenTB}">`; });
         }
 
-        // D. NHẮC VIỆC (BỔ SUNG HÔM NAY)
+        // D. NHẮC VIỆC (ADMIN)
         const ulNhacViec = document.getElementById('danh-sach-nhac-viec');
         if (ulNhacViec) {
             ulNhacViec.innerHTML = "";
-            const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1);
-            const t_yyyy = tomorrow.getFullYear(), t_mm = String(tomorrow.getMonth() + 1).padStart(2, '0'), t_dd = String(tomorrow.getDate()).padStart(2, '0');
-            const tomorrowStr = `${t_yyyy}-${t_mm}-${t_dd}`; 
 
             const pendingReqs = ketQuaData.filter(item => item.trangThai === "Chờ duyệt" || !item.trangThai);
-            const todaySchedule = ketQuaData.filter(item => item.trangThai === "Đã Duyệt" && (item.chiTiet || "").includes(todayStr));
-            const tomorrowReqs = ketQuaData.filter(item => item.trangThai === "Đã Duyệt" && (item.chiTiet || "").includes(tomorrowStr));
+            // Áp dụng bộ radar định dạng ngày cho Hôm nay và Ngày mai
+            const todaySchedule = ketQuaData.filter(item => item.trangThai === "Đã Duyệt" && kiemTraKhopNgay(item.chiTiet, todayFormats));
+            const tomorrowReqs = ketQuaData.filter(item => item.trangThai === "Đã Duyệt" && kiemTraKhopNgay(item.chiTiet, tomorrowFormats));
 
             if (pendingReqs.length > 0) ulNhacViec.innerHTML += `<li style="color: #dc3545; font-weight: bold; background: #ffe6e6; padding: 10px; border-radius: 5px;">🚨 BẠN CÓ ${pendingReqs.length} YÊU CẦU MỚI CHỜ DUYỆT!</li>`;
             else ulNhacViec.innerHTML += `<li style="color: #6c757d;">✅ Không có yêu cầu nào đang chờ duyệt.</li>`;
@@ -319,6 +348,8 @@ function taiDanhMucThietBi() {
         window.location.href = `https://docs.google.com/spreadsheets/d/${urlParts[urlParts.indexOf('d') + 1]}/export?format=xlsx`;
     } catch (error) { alert("Link CSDL không hợp lệ!"); }
 }
+
+function xuatFileWord(loaiPhieu) { /* Hàm xuất Word không đổi */ }
 
 // ==========================================
 // 8. KHỞI CHẠY TỰ ĐỘNG
