@@ -1,8 +1,8 @@
 // ========================================================
 // 1. CẤU HÌNH LINK KẾT NỐI (DÁN LINK CỦA BẠN VÀO ĐÂY)
 // ========================================================
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwEZuJai2Fik6poHkc_Ef7UtN67vAFKpBdvnFdopWVLM8J6rdheVw4msrlUbUTrJA1m2A/exec";
-const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/10Q6A2YD9AgJn3AdbBrpdhg-cDIvMK04JoJJv4Cf3fGo/edit?usp=sharing";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxEpzGOK3qvtVHwLeZ2OSZvwllwg5fPZSbSyU0SsYVckIPzUpM-f2xVZQ6WoCtfFOcrOg/exec";
+const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1xKQTDkUKQJnmcNaTko4XzzRjGHlC-QUd6Ljr315iQpo/edit?usp=sharing";
 
 // ==========================================
 // 2. ĐỒNG HỒ & THỜI GIAN BIỂU
