@@ -42,7 +42,7 @@ function capNhatThoiGian() {
 }
 
 // ==========================================
-// 3. CHUYỂN TAB & GIỎ HÀNG THIẾT BỊ
+// 3. CHUYỂN TAB & GIỎ HÀNG THIẾT BỊ (CÓ SỐ LƯỢNG)
 // ==========================================
 function chuyenTab(event, tabId) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -51,27 +51,24 @@ function chuyenTab(event, tabId) {
     event.currentTarget.classList.add('active');
 
     if (tabId === 'trang-chu') taiDuLieuTrangChu();
-    if (tabId === 'ket-qua') taiKetQuaTuSheets();
+    if (tabId === 'ket-qua' || tabId === 'duyet-tb') taiBangDuyetTB();
+    if (tabId === 'duyet-phong') taiBangDuyetPhong();
     if (tabId === 'ket-qua-gv') taiKetQuaGiaoVien();
 }
 
-let danhSachMuonTB = []; // Mảng lưu các đối tượng { ten: "...", soLuong: ... }
+let danhSachMuonTB = [];
+let danhSachThietBiGoc = [];
 
 function themThietBiVaoDanhSach() {
     let inputTB = document.getElementById('inputTimTB');
     let inputSL = document.getElementById('inputSoLuongTB');
     let val = inputTB.value.trim();
     let sl = parseInt(inputSL ? inputSL.value : 1) || 1;
-    
     if(!val) return;
     
-    // Kiểm tra xem thiết bị này đã có trong danh sách chưa, nếu có thì cộng dồn số lượng
     let existing = danhSachMuonTB.find(item => item.ten === val);
-    if(existing) {
-        existing.soLuong += sl;
-    } else {
-        danhSachMuonTB.push({ ten: val, soLuong: sl });
-    }
+    if(existing) { existing.soLuong += sl; } 
+    else { danhSachMuonTB.push({ ten: val, soLuong: sl }); }
     
     inputTB.value = ""; 
     if(inputSL) inputSL.value = "1";
@@ -86,29 +83,34 @@ function xoaThietBi(index) {
 function renderDanhSachMuon() {
     let box = document.getElementById('boxDanhSachTB');
     let maTBInput = document.getElementById('maTB'); 
-    
     if(danhSachMuonTB.length === 0) {
         if(box) box.innerHTML = '<em style="color: #888; font-size: 13px;">Chưa chọn thiết bị nào...</em>';
-        if(maTBInput) maTBInput.value = "";
-        return;
+        if(maTBInput) maTBInput.value = ""; return;
     }
-    
     let html = '<ul style="padding-left: 0; list-style: none; margin: 0; font-size: 14px;">';
     let dataStringArr = [];
-    
     danhSachMuonTB.forEach((item, i) => {
-        let displayStr = `${item.ten} (SL: ${item.soLuong})`;
-        dataStringArr.push(displayStr);
-        
-        html += `<li style="margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">
-                 <strong>${item.ten}</strong> - Số lượng: <span style="color: #007bff; font-weight: bold;">${item.soLuong}</span>
-                 <span style="color: red; cursor: pointer; float: right; font-weight: bold;" onclick="xoaThietBi(${i})">❌ Xóa</span>
-                 </li>`;
+        dataStringArr.push(`${item.ten} (SL: ${item.soLuong})`);
+        html += `<li style="margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;"><strong>${item.ten}</strong> - SL: <span style="color:#007bff; font-weight:bold;">${item.soLuong}</span> <span style="color: red; cursor: pointer; float: right; font-weight: bold;" onclick="xoaThietBi(${i})">❌ Xóa</span></li>`;
     });
     html += '</ul>';
-    
     if(box) box.innerHTML = html;
     if(maTBInput) maTBInput.value = dataStringArr.join(" | ");
+}
+
+// Lọc thiết bị theo phòng/bộ môn chuyên môn
+function locThietBiTheoPhong() {
+    let phongChon = document.getElementById('chonBoMon').value;
+    let dataTBList = document.getElementById('dataTB');
+    if (!dataTBList) return;
+    dataTBList.innerHTML = '';
+    let dsLoc = danhSachThietBiGoc;
+    if (phongChon) {
+        dsLoc = danhSachThietBiGoc.filter(tb => tb.boMon === phongChon);
+    }
+    dsLoc.forEach(tb => {
+        dataTBList.innerHTML += `<option value="${tb.maTB} - ${tb.tenTB}">`;
+    });
 }
 
 // ==========================================
@@ -127,35 +129,16 @@ function taiDuLieuTrangChu() {
         if (!dashboardData.thietBi) dashboardData.thietBi = [];
         if (!ketQuaData) ketQuaData = [];
 
-        // TẠO RADAR QUÉT MỌI ĐỊNH DẠNG NGÀY THÁNG
+        danhSachThietBiGoc = dashboardData.thietBi; // Lưu lại danh sách gốc
+
         const now = new Date();
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const dd = String(now.getDate()).padStart(2, '0');
-        
-        // Quét mọi khả năng định dạng của Hôm nay
-        const todayFormats = [
-            `${yyyy}-${mm}-${dd}`, // 2026-10-09
-            `${dd}/${mm}/${yyyy}`, // 09/10/2026
-            `${mm}/${dd}/${yyyy}`, // 10/09/2026
-            `${dd}-${mm}-${yyyy}`  // 09-10-2026
-        ];
+        const yyyy = now.getFullYear(), mm = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
+        const todayFormats = [`${yyyy}-${mm}-${dd}`, `${dd}/${mm}/${yyyy}`, `${mm}/${dd}/${yyyy}`, `${dd}-${mm}-${yyyy}`];
 
-        const tomorrow = new Date(now); 
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const t_yyyy = tomorrow.getFullYear();
-        const t_mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-        const t_dd = String(tomorrow.getDate()).padStart(2, '0');
-        
-        // Quét mọi khả năng định dạng của Ngày mai
-        const tomorrowFormats = [
-            `${t_yyyy}-${t_mm}-${t_dd}`,
-            `${t_dd}/${t_mm}/${t_yyyy}`,
-            `${t_mm}/${t_dd}/${t_yyyy}`,
-            `${t_dd}-${t_mm}-${t_yyyy}`
-        ];
+        const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1);
+        const t_yyyy = tomorrow.getFullYear(), t_mm = String(tomorrow.getMonth() + 1).padStart(2, '0'), t_dd = String(tomorrow.getDate()).padStart(2, '0');
+        const tomorrowFormats = [`${t_yyyy}-${t_mm}-${t_dd}`, `${t_dd}/${t_mm}/${t_yyyy}`, `${t_mm}/${t_dd}/${t_yyyy}`, `${t_dd}-${t_mm}-${t_yyyy}`];
 
-        // Hàm kiểm tra xem chi tiết có chứa bất kỳ định dạng ngày nào không
         const kiemTraKhopNgay = (chiTiet, mangDinhDang) => {
             if (!chiTiet) return false;
             return mangDinhDang.some(dinhDang => chiTiet.includes(dinhDang));
@@ -163,7 +146,6 @@ function taiDuLieuTrangChu() {
 
         const tongPhut = now.getHours() * 60 + now.getMinutes();
         let currentTiet = -1, currentBuoi = "";
-
         for (let tiet of thoiGianBieu) {
             if (tongPhut >= tiet.batDau && tongPhut <= tiet.ketThuc) {
                 currentTiet = parseInt(tiet.ten.match(/\d+/)[0]);
@@ -172,13 +154,11 @@ function taiDuLieuTrangChu() {
             }
         }
 
-        // Lọc yêu cầu ĐÃ DUYỆT cho Hôm nay
         const approvedToday = ketQuaData.filter(item => item.trangThai === "Đã Duyệt" && kiemTraKhopNgay(item.chiTiet, todayFormats));
 
-        // A. PHÒNG BỘ MÔN
+        // Phòng bộ môn
         ulPhong.innerHTML = "";
         if (dashboardData.phong.length === 0) ulPhong.innerHTML = "<li>Chưa có dữ liệu phòng.</li>";
-        
         dashboardData.phong.forEach(p => {
             let status = "Trống", badge = "badge-green", gvInfo = "";
             if (currentTiet !== -1) {
@@ -200,61 +180,47 @@ function taiDuLieuTrangChu() {
             ulPhong.innerHTML += `<li><span class="badge ${badge}">${status}</span> <strong>${p.maPhong}</strong>: ${p.tenPhong}${gvInfo}</li>`;
         });
 
-        // B. THIẾT BỊ (CHỈ HIỆN 5 MÓN)
+        // Thiết bị (hiện 5 món đầu)
         ulTB.innerHTML = "";
-        if (dashboardData.thietBi.length === 0) {
-            ulTB.innerHTML = "<li>Chưa có dữ liệu thiết bị.</li>";
-        } else {
-            dashboardData.thietBi.forEach((tb, index) => {
-                let slBanDau = parseInt(tb.soLuong) || 0, slDaMuon = 0;
-                approvedToday.forEach(req => { if (req.loaiYeuCau === "Mượn Thiết Bị" && req.chiTiet.includes(tb.maTB)) slDaMuon += 1; });
-                let slConLai = slBanDau - slDaMuon, donVi = tb.donVi ? tb.donVi : '';
-                let status = slConLai > 0 ? slConLai + ' ' + donVi : 'Hết / Đang mượn', badge = slConLai > 0 ? "badge-green" : "badge-red";
-                let hiddenClass = index >= 5 ? 'class="tb-hidden" style="display: none;"' : '';
-                ulTB.innerHTML += `<li ${hiddenClass}><span class="badge ${badge}">${status}</span> <strong>${tb.maTB}</strong>: ${tb.tenTB}</li>`;
-            });
-            if (dashboardData.thietBi.length > 5) {
-                ulTB.innerHTML += `<li style="justify-content: center; cursor: pointer; color: #0056b3; font-weight: bold; border-bottom: none; background: #f8f9fa; border-radius: 5px; margin-top: 5px;" onclick="toggleXemThemTB(this)">⬇️ Xem thêm (${dashboardData.thietBi.length - 5} thiết bị khác)...</li>`;
-            }
+        dashboardData.thietBi.forEach((tb, index) => {
+            let status = `${tb.soLuong} ${tb.donVi || 'cái'}`, badge = "badge-green";
+            let hiddenClass = index >= 5 ? 'class="tb-hidden" style="display: none;"' : '';
+            ulTB.innerHTML += `<li ${hiddenClass}><span class="badge ${badge}">${status}</span> <strong>${tb.maTB}</strong>: ${tb.tenTB}</li>`;
+        });
+        if (dashboardData.thietBi.length > 5) {
+            ulTB.innerHTML += `<li style="justify-content: center; cursor: pointer; color: #0056b3; font-weight: bold; border-bottom: none; background: #f8f9fa; border-radius: 5px; margin-top: 5px;" onclick="toggleXemThemTB(this)">⬇️ Xem thêm (${dashboardData.thietBi.length - 5} thiết bị khác)...</li>`;
         }
 
-        // C. BƠM FORM 
+        // Bơm Form
         const selectPhong = document.getElementById('maPhong');
         if (selectPhong && selectPhong.tagName === 'SELECT') {
             selectPhong.innerHTML = '<option value="">-- Chọn phòng bộ môn --</option>';
             dashboardData.phong.forEach(p => { selectPhong.innerHTML += `<option value="${p.maPhong}">${p.tenPhong}</option>`; });
         }
-        const dataTBList = document.getElementById('dataTB');
-        if (dataTBList) {
-            dataTBList.innerHTML = '';
-            dashboardData.thietBi.forEach(tb => { dataTBList.innerHTML += `<option value="${tb.maTB} - ${tb.tenTB}">`; });
-        }
+        locThietBiTheoPhong(); // Nạp danh sách vào datalist ban đầu
 
-        // D. NHẮC VIỆC (ADMIN)
+        // Nhắc việc Admin
         const ulNhacViec = document.getElementById('danh-sach-nhac-viec');
         if (ulNhacViec) {
             ulNhacViec.innerHTML = "";
-
             const pendingReqs = ketQuaData.filter(item => item.trangThai === "Chờ duyệt" || !item.trangThai);
-            // Áp dụng bộ radar định dạng ngày cho Hôm nay và Ngày mai
             const todaySchedule = ketQuaData.filter(item => item.trangThai === "Đã Duyệt" && kiemTraKhopNgay(item.chiTiet, todayFormats));
             const tomorrowReqs = ketQuaData.filter(item => item.trangThai === "Đã Duyệt" && kiemTraKhopNgay(item.chiTiet, tomorrowFormats));
 
             if (pendingReqs.length > 0) ulNhacViec.innerHTML += `<li style="color: #dc3545; font-weight: bold; background: #ffe6e6; padding: 10px; border-radius: 5px;">🚨 BẠN CÓ ${pendingReqs.length} YÊU CẦU MỚI CHỜ DUYỆT!</li>`;
             else ulNhacViec.innerHTML += `<li style="color: #6c757d;">✅ Không có yêu cầu nào đang chờ duyệt.</li>`;
 
-            // Thông báo Hôm Nay
             ulNhacViec.innerHTML += `<li style="margin-top: 15px; font-weight: bold; color: #d32f2f;">🔥 LỊCH SỬ DỤNG HÔM NAY (${dd}/${mm}):</li>`;
             if (todaySchedule.length > 0) todaySchedule.forEach(req => { ulNhacViec.innerHTML += `<li style="border-left: 3px solid #dc3545; margin-left: 10px; padding-left: 10px; margin-bottom: 5px;"><strong>${req.tenGV}</strong> | ${req.loaiYeuCau}: ${req.chiTiet}</li>`; });
             else ulNhacViec.innerHTML += `<li style="color: #28a745; margin-left: 10px;">Hôm nay không có lịch mượn phòng/thiết bị nào.</li>`;
 
-            // Thông báo Ngày Mai
-            ulNhacViec.innerHTML += `<li style="margin-top: 15px; font-weight: bold; color: #0056b3;">📅 CẦN CHUẨN BỊ CHO NGÀY MAI (${t_dd}/${t_mm}):</li>`;
+            const t_dd_str = String(tomorrow.getDate()).padStart(2, '0'), t_mm_str = String(tomorrow.getMonth() + 1).padStart(2, '0');
+            ulNhacViec.innerHTML += `<li style="margin-top: 15px; font-weight: bold; color: #0056b3;">📅 CẦN CHUẨN BỊ CHO NGÀY MAI (${t_dd_str}/${t_mm_str}):</li>`;
             if (tomorrowReqs.length > 0) tomorrowReqs.forEach(req => { ulNhacViec.innerHTML += `<li style="border-left: 3px solid #007bff; margin-left: 10px; padding-left: 10px; margin-bottom: 5px;"><strong>${req.tenGV}</strong> | ${req.loaiYeuCau}: ${req.chiTiet}</li>`; });
             else ulNhacViec.innerHTML += `<li style="color: #6c757d; margin-left: 10px;">Chưa có lịch đăng ký cho ngày mai.</li>`;
         }
     })
-    .catch(err => { console.error(err); });
+    .catch(err => console.error("Lỗi:", err));
 }
 
 function toggleXemThemTB(btn) {
@@ -267,46 +233,34 @@ function toggleXemThemTB(btn) {
 }
 
 // ==========================================
-// 5. TẢI BẢNG KẾT QUẢ ĐÃ TÁCH RIÊNG & CÓ LỌC THÁNG
+// 5. QUẢN LÝ BẢNG DUYỆT RIÊNG BIỆT (CÓ LỌC THÁNG)
 // ==========================================
-function taiKetQuaTuSheets() {
-    taiBangDuyetTB();
-    taiBangDuyetPhong();
-}
-
 function taiBangDuyetTB() {
     const tbody = document.getElementById('table-duyet-tb');
     if (!tbody) return;
     tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Đang tải dữ liệu mượn thiết bị...</td></tr>";
-
     let filterVal = document.getElementById('filterThangTB') ? document.getElementById('filterThangTB').value : "";
 
     fetch(WEB_APP_URL + "?action=getKetQua").then(res => res.json()).then(data => {
         tbody.innerHTML = "";
         let dsTB = data.filter(item => item.loaiYeuCau === "Mượn Thiết Bị");
-
-        // Lọc theo tháng nếu người dùng chọn
         if (filterVal) {
-            dsTB = dsTB.filter(item => item.chiTiet.includes(filterVal.split('-').reverse().join('/')) || item.thoiGian.includes(filterVal.split('-').reverse().join('/')));
+            let mm_yyyy = filterVal.split('-').reverse().join('/'); // Chuyển 2026-10 thành 10/2026
+            dsTB = dsTB.filter(item => item.chiTiet.includes(mm_yyyy) || item.thoiGian.includes(mm_yyyy));
         }
-
         if(dsTB.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; color:#888;'>Không có yêu cầu mượn thiết bị nào trong tháng này.</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; color:#888;'>Không có yêu cầu mượn thiết bị.</td></tr>";
             return;
         }
-
         dsTB.forEach(item => {
             let badgeColor = item.trangThai === "Đã Duyệt" || item.trangThai === "Đã Trả" ? "badge-green" : (item.trangThai === "Từ chối" ? "badge-red" : "badge-orange");
             let btnAdmin = "";
             if (item.trangThai === "Chờ duyệt" || !item.trangThai) {
-                btnAdmin = `<button class="action-btn btn-duyet" onclick="xuLyAdmin('${item.id}', 'Đã Duyệt')">Duyệt</button>
-                            <button class="action-btn btn-tuchoi" onclick="xuLyAdmin('${item.id}', 'Từ chối')">Từ chối</button>`;
+                btnAdmin = `<button class="action-btn btn-duyet" onclick="xuLyAdmin('${item.id}', 'Đã Duyệt')">Duyệt</button><button class="action-btn btn-tuchoi" onclick="xuLyAdmin('${item.id}', 'Từ chối')">Từ chối</button>`;
             } else if (item.trangThai === "Đã Duyệt") {
                 btnAdmin = `<button class="action-btn" style="background-color: #17a2b8;" onclick="thuHoiThietBi('${item.id}')">Thu hồi TB</button>`;
             }
-
-            tbody.innerHTML += `<tr><td>${item.id}</td><td>${item.tenGV}</td><td>${item.chiTiet}</td>
-                                <td><span class="badge ${badgeColor}">${item.trangThai || 'Chờ duyệt'}</span></td><td>${btnAdmin}</td></tr>`;
+            tbody.innerHTML += `<tr><td>${item.id}</td><td>${item.tenGV}</td><td>${item.chiTiet}</td><td><span class="badge ${badgeColor}">${item.trangThai || 'Chờ duyệt'}</span></td><td>${btnAdmin}</td></tr>`;
         });
     });
 }
@@ -315,32 +269,39 @@ function taiBangDuyetPhong() {
     const tbody = document.getElementById('table-duyet-phong');
     if (!tbody) return;
     tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Đang tải dữ liệu đặt phòng...</td></tr>";
-
     let filterVal = document.getElementById('filterThangPhong') ? document.getElementById('filterThangPhong').value : "";
 
     fetch(WEB_APP_URL + "?action=getKetQua").then(res => res.json()).then(data => {
         tbody.innerHTML = "";
         let dsPhong = data.filter(item => item.loaiYeuCau === "Đặt Phòng");
-
         if (filterVal) {
-            dsPhong = dsPhong.filter(item => item.chiTiet.includes(filterVal.split('-').reverse().join('/')));
+            let mm_yyyy = filterVal.split('-').reverse().join('/');
+            dsPhong = dsPhong.filter(item => item.chiTiet.includes(mm_yyyy));
         }
-
         if(dsPhong.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; color:#888;'>Không có yêu cầu đặt phòng nào trong tháng này.</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; color:#888;'>Không có yêu cầu đặt phòng.</td></tr>";
             return;
         }
-
         dsPhong.forEach(item => {
             let badgeColor = item.trangThai === "Đã Duyệt" ? "badge-green" : (item.trangThai === "Từ chối" ? "badge-red" : "badge-orange");
             let btnAdmin = "";
             if (item.trangThai === "Chờ duyệt" || !item.trangThai) {
-                btnAdmin = `<button class="action-btn btn-duyet" onclick="xuLyAdmin('${item.id}', 'Đã Duyệt')">Duyệt</button>
-                            <button class="action-btn btn-tuchoi" onclick="xuLyAdmin('${item.id}', 'Từ chối')">Từ chối</button>`;
+                btnAdmin = `<button class="action-btn btn-duyet" onclick="xuLyAdmin('${item.id}', 'Đã Duyệt')">Duyệt</button><button class="action-btn btn-tuchoi" onclick="xuLyAdmin('${item.id}', 'Từ chối')">Từ chối</button>`;
             }
+            tbody.innerHTML += `<tr><td>${item.id}</td><td>${item.tenGV}</td><td>${item.chiTiet}</td><td><span class="badge ${badgeColor}">${item.trangThai || 'Chờ duyệt'}</span></td><td>${btnAdmin}</td></tr>`;
+        });
+    });
+}
 
-            tbody.innerHTML += `<tr><td>${item.id}</td><td>${item.tenGV}</td><td>${item.chiTiet}</td>
-                                <td><span class="badge ${badgeColor}">${item.trangThai || 'Chờ duyệt'}</span></td><td>${btnAdmin}</td></tr>`;
+function taiKetQuaGiaoVien() {
+    const tbody = document.getElementById('table-ket-qua-gv');
+    if (!tbody) return;
+    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Đang tải dữ liệu...</td></tr>";
+    fetch(WEB_APP_URL + "?action=getKetQua").then(res => res.json()).then(data => {
+        tbody.innerHTML = "";
+        data.forEach(item => {
+            let badgeColor = item.trangThai === "Đã Duyệt" || item.trangThai === "Đã Trả" ? "badge-green" : (item.trangThai === "Từ chối" ? "badge-red" : "badge-orange");
+            tbody.innerHTML += `<tr><td>${item.thoiGian}</td><td>${item.tenGV}</td><td>${item.loaiYeuCau}</td><td>${item.chiTiet}</td><td><span class="badge ${badgeColor}">${item.trangThai || 'Chờ duyệt'}</span></td></tr>`;
         });
     });
 }
@@ -357,13 +318,13 @@ function guiYeuCau(loaiHanhDong) {
         data.ngayMuon = document.getElementById('ngayMuonTB').value;
         data.ngayTra = document.getElementById('ngayTraTB').value;
         data.baiHoc = document.getElementById('baiHocTB').value;
-        data.lopDay = document.getElementById('lopDayTB') ? document.getElementById('lopDayTB').value : "";
+        data.lopDay = document.getElementById('lopDayTB').value;
     } else if (loaiHanhDong === 'datPhong') {
         data.tenGV = document.getElementById('gvPhong').value; 
         data.maPhong = document.getElementById('maPhong').value; 
         data.ngayDat = document.getElementById('ngayDatPhong').value; 
         data.baiDay = document.getElementById('baiDayPhong').value;
-        data.lopDay = document.getElementById('lopDayPhong') ? document.getElementById('lopDayPhong').value : "";
+        data.lopDay = document.getElementById('lopDayPhong').value;
         let selBuoi = document.getElementById('buoiHoc');
         data.buoiHoc = selBuoi ? selBuoi.value : "Sáng"; 
         data.tietHoc = document.getElementById('tietHoc').value;
@@ -372,7 +333,7 @@ function guiYeuCau(loaiHanhDong) {
         data.moTa = document.getElementById('moTaSuCo').value;
     } else if (loaiHanhDong === 'muaSam') {
         data.tenTB = document.getElementById('tenTBMuaSam').value; 
-        data.soLuong = document.getElementById('soLuongMuaSam') ? document.getElementById('soLuongMuaSam').value : "Nhiều món"; 
+        data.soLuong = "Nhiều món"; 
         data.lyDo = document.getElementById('lyDoMuaSam').value;
     }
 
@@ -387,7 +348,7 @@ function guiYeuCau(loaiHanhDong) {
 function xuLyAdmin(id, hanhDong) {
     if(confirm(`Xác nhận ${hanhDong} yêu cầu ID: ${id}?`)) {
         fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'adminDuyet', id: id, ketQua: hanhDong }) })
-        .then(() => { alert("Đã xử lý! Đang làm mới bảng..."); setTimeout(taiKetQuaTuSheets, 1500); taiDuLieuTrangChu(); });
+        .then(() => { alert("Đã xử lý! Đang làm mới bảng..."); setTimeout(() => { taiBangDuyetTB(); taiBangDuyetPhong(); taiDuLieuTrangChu(); }, 1500); });
     }
 }
 
@@ -395,13 +356,12 @@ function thuHoiThietBi(id) {
     let nowStr = new Date().toLocaleDateString('vi-VN');
     let ngayTra = prompt(`Đang làm thủ tục thu hồi đơn ID: ${id}\nNhập NGÀY TRẢ thực tế:`, nowStr);
     if (!ngayTra) return;
-    
     let tinhTrang = prompt("Nhập TÌNH TRẠNG thiết bị (Bình thường / Thiếu / Hỏng...):", "Bình thường");
     if (!tinhTrang) return;
 
-    if(confirm(`Chốt thu hồi thiết bị? Số lượng trong kho sẽ được cộng lại tương ứng.`)) {
+    if(confirm(`Chốt thu hồi thiết bị?`)) {
         fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: 'adminTraTB', id: id, ngayTra: ngayTra, tinhTrang: tinhTrang }) })
-        .then(() => { alert("Đã cập nhật trạng thái thu hồi thành công!"); setTimeout(taiKetQuaTuSheets, 1500); taiDuLieuTrangChu(); });
+        .then(() => { alert("Đã cập nhật thu hồi thành công!"); setTimeout(() => { taiBangDuyetTB(); taiDuLieuTrangChu(); }, 1500); });
     }
 }
 
@@ -409,26 +369,26 @@ function thuHoiThietBi(id) {
 // 7. TIỆN ÍCH
 // ==========================================
 function moTrangTinh() {
-    if (SPREADSHEET_URL.includes("LINK_GOOGLE_SHEETS")) { alert("Vui lòng khai báo link Google Sheets gốc ở đầu file script.js!"); return; }
+    if (SPREADSHEET_URL.includes("LINK_GOOGLE_SHEETS")) { alert("Vui lòng khai báo link Google Sheets gốc!"); return; }
     window.open(SPREADSHEET_URL, '_blank');
 }
 function taiDanhMucThietBi() {
-    if (SPREADSHEET_URL.includes("LINK_GOOGLE_SHEETS")) { alert("Hệ thống chưa được cấu hình Link tải!"); return; }
+    if (SPREADSHEET_URL.includes("LINK_GOOGLE_SHEETS")) { alert("Hệ thống chưa cấu hình Link tải!"); return; }
     try {
         let urlParts = SPREADSHEET_URL.split('/');
         window.location.href = `https://docs.google.com/spreadsheets/d/${urlParts[urlParts.indexOf('d') + 1]}/export?format=xlsx`;
     } catch (error) { alert("Link CSDL không hợp lệ!"); }
 }
 
-function xuatFileWord(loaiPhieu) { /* Hàm xuất Word không đổi */ }
-
 // ==========================================
 // 8. KHỞI CHẠY TỰ ĐỘNG
 // ==========================================
 window.onload = function() {
-    console.log("Hệ thống đã kết nối thành công!"); 
     setInterval(capNhatThoiGian, 1000); capNhatThoiGian();
     taiDuLieuTrangChu();
-    if (document.getElementById('admin-panel')) taiKetQuaTuSheets();
-    if (document.getElementById('ket-qua-gv') && document.getElementById('ket-qua-gv').classList.contains('active')) taiKetQuaGiaoVien();
+    if (document.getElementById('admin-panel')) {
+        taiBangDuyetTB();
+        taiBangDuyetPhong();
+    }
+    if (document.getElementById('ket-qua-gv')) taiKetQuaGiaoVien();
 };
