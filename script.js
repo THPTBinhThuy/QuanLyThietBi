@@ -267,43 +267,80 @@ function toggleXemThemTB(btn) {
 }
 
 // ==========================================
-// 5. TẢI BẢNG KẾT QUẢ
+// 5. TẢI BẢNG KẾT QUẢ ĐÃ TÁCH RIÊNG & CÓ LỌC THÁNG
 // ==========================================
 function taiKetQuaTuSheets() {
-    const tbody = document.getElementById('table-ket-qua-dang-ky');
+    taiBangDuyetTB();
+    taiBangDuyetPhong();
+}
+
+function taiBangDuyetTB() {
+    const tbody = document.getElementById('table-duyet-tb');
     if (!tbody) return;
-    tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Đang tải dữ liệu...</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Đang tải dữ liệu mượn thiết bị...</td></tr>";
+
+    let filterVal = document.getElementById('filterThangTB') ? document.getElementById('filterThangTB').value : "";
 
     fetch(WEB_APP_URL + "?action=getKetQua").then(res => res.json()).then(data => {
         tbody.innerHTML = "";
-        data.forEach(item => {
+        let dsTB = data.filter(item => item.loaiYeuCau === "Mượn Thiết Bị");
+
+        // Lọc theo tháng nếu người dùng chọn
+        if (filterVal) {
+            dsTB = dsTB.filter(item => item.chiTiet.includes(filterVal.split('-').reverse().join('/')) || item.thoiGian.includes(filterVal.split('-').reverse().join('/')));
+        }
+
+        if(dsTB.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; color:#888;'>Không có yêu cầu mượn thiết bị nào trong tháng này.</td></tr>";
+            return;
+        }
+
+        dsTB.forEach(item => {
             let badgeColor = item.trangThai === "Đã Duyệt" || item.trangThai === "Đã Trả" ? "badge-green" : (item.trangThai === "Từ chối" ? "badge-red" : "badge-orange");
-            
             let btnAdmin = "";
             if (item.trangThai === "Chờ duyệt" || !item.trangThai) {
                 btnAdmin = `<button class="action-btn btn-duyet" onclick="xuLyAdmin('${item.id}', 'Đã Duyệt')">Duyệt</button>
                             <button class="action-btn btn-tuchoi" onclick="xuLyAdmin('${item.id}', 'Từ chối')">Từ chối</button>`;
-            } else if (item.trangThai === "Đã Duyệt" && item.loaiYeuCau === "Mượn Thiết Bị") {
+            } else if (item.trangThai === "Đã Duyệt") {
                 btnAdmin = `<button class="action-btn" style="background-color: #17a2b8;" onclick="thuHoiThietBi('${item.id}')">Thu hồi TB</button>`;
             }
 
-            tbody.innerHTML += `<tr><td>${item.id || 'N/A'}</td><td>${item.tenGV}</td><td>${item.loaiYeuCau}</td><td>${item.chiTiet}</td>
+            tbody.innerHTML += `<tr><td>${item.id}</td><td>${item.tenGV}</td><td>${item.chiTiet}</td>
                                 <td><span class="badge ${badgeColor}">${item.trangThai || 'Chờ duyệt'}</span></td><td>${btnAdmin}</td></tr>`;
         });
     });
 }
 
-function taiKetQuaGiaoVien() {
-    const tbody = document.getElementById('table-ket-qua-gv');
+function taiBangDuyetPhong() {
+    const tbody = document.getElementById('table-duyet-phong');
     if (!tbody) return;
-    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Đang tải dữ liệu...</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Đang tải dữ liệu đặt phòng...</td></tr>";
+
+    let filterVal = document.getElementById('filterThangPhong') ? document.getElementById('filterThangPhong').value : "";
 
     fetch(WEB_APP_URL + "?action=getKetQua").then(res => res.json()).then(data => {
         tbody.innerHTML = "";
-        data.forEach(item => {
-            let badgeColor = item.trangThai === "Đã Duyệt" || item.trangThai === "Đã Trả" ? "badge-green" : (item.trangThai === "Từ chối" ? "badge-red" : "badge-orange");
-            tbody.innerHTML += `<tr><td>${item.thoiGian}</td><td>${item.tenGV}</td><td>${item.loaiYeuCau}</td>
-                                <td>${item.chiTiet}</td><td><span class="badge ${badgeColor}">${item.trangThai || 'Chờ duyệt'}</span></td></tr>`;
+        let dsPhong = data.filter(item => item.loaiYeuCau === "Đặt Phòng");
+
+        if (filterVal) {
+            dsPhong = dsPhong.filter(item => item.chiTiet.includes(filterVal.split('-').reverse().join('/')));
+        }
+
+        if(dsPhong.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; color:#888;'>Không có yêu cầu đặt phòng nào trong tháng này.</td></tr>";
+            return;
+        }
+
+        dsPhong.forEach(item => {
+            let badgeColor = item.trangThai === "Đã Duyệt" ? "badge-green" : (item.trangThai === "Từ chối" ? "badge-red" : "badge-orange");
+            let btnAdmin = "";
+            if (item.trangThai === "Chờ duyệt" || !item.trangThai) {
+                btnAdmin = `<button class="action-btn btn-duyet" onclick="xuLyAdmin('${item.id}', 'Đã Duyệt')">Duyệt</button>
+                            <button class="action-btn btn-tuchoi" onclick="xuLyAdmin('${item.id}', 'Từ chối')">Từ chối</button>`;
+            }
+
+            tbody.innerHTML += `<tr><td>${item.id}</td><td>${item.tenGV}</td><td>${item.chiTiet}</td>
+                                <td><span class="badge ${badgeColor}">${item.trangThai || 'Chờ duyệt'}</span></td><td>${btnAdmin}</td></tr>`;
         });
     });
 }
