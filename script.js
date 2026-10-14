@@ -55,26 +55,60 @@ function chuyenTab(event, tabId) {
     if (tabId === 'ket-qua-gv') taiKetQuaGiaoVien();
 }
 
-let danhSachMuonTB = [];
+let danhSachMuonTB = []; // Mảng lưu các đối tượng { ten: "...", soLuong: ... }
+
 function themThietBiVaoDanhSach() {
     let inputTB = document.getElementById('inputTimTB');
+    let inputSL = document.getElementById('inputSoLuongTB');
     let val = inputTB.value.trim();
+    let sl = parseInt(inputSL ? inputSL.value : 1) || 1;
+    
     if(!val) return;
-    if(!danhSachMuonTB.includes(val)) danhSachMuonTB.push(val);
-    inputTB.value = ""; renderDanhSachMuon();
+    
+    // Kiểm tra xem thiết bị này đã có trong danh sách chưa, nếu có thì cộng dồn số lượng
+    let existing = danhSachMuonTB.find(item => item.ten === val);
+    if(existing) {
+        existing.soLuong += sl;
+    } else {
+        danhSachMuonTB.push({ ten: val, soLuong: sl });
+    }
+    
+    inputTB.value = ""; 
+    if(inputSL) inputSL.value = "1";
+    renderDanhSachMuon();
 }
-function xoaThietBi(index) { danhSachMuonTB.splice(index, 1); renderDanhSachMuon(); }
+
+function xoaThietBi(index) {
+    danhSachMuonTB.splice(index, 1);
+    renderDanhSachMuon();
+}
+
 function renderDanhSachMuon() {
-    let box = document.getElementById('boxDanhSachTB'), maTBInput = document.getElementById('maTB'); 
+    let box = document.getElementById('boxDanhSachTB');
+    let maTBInput = document.getElementById('maTB'); 
+    
     if(danhSachMuonTB.length === 0) {
         if(box) box.innerHTML = '<em style="color: #888; font-size: 13px;">Chưa chọn thiết bị nào...</em>';
-        if(maTBInput) maTBInput.value = ""; return;
+        if(maTBInput) maTBInput.value = "";
+        return;
     }
+    
     let html = '<ul style="padding-left: 0; list-style: none; margin: 0; font-size: 14px;">';
-    danhSachMuonTB.forEach((tb, i) => { html += `<li style="margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">${tb} <span style="color: red; cursor: pointer; float: right; font-weight: bold;" onclick="xoaThietBi(${i})">❌ Xóa</span></li>`; });
+    let dataStringArr = [];
+    
+    danhSachMuonTB.forEach((item, i) => {
+        let displayStr = `${item.ten} (SL: ${item.soLuong})`;
+        dataStringArr.push(displayStr);
+        
+        html += `<li style="margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">
+                 <strong>${item.ten}</strong> - Số lượng: <span style="color: #007bff; font-weight: bold;">${item.soLuong}</span>
+                 <span style="color: red; cursor: pointer; float: right; font-weight: bold;" onclick="xoaThietBi(${i})">❌ Xóa</span>
+                 </li>`;
+    });
     html += '</ul>';
+    
     if(box) box.innerHTML = html;
-    if(maTBInput) maTBInput.value = danhSachMuonTB.join(", ");
+    if(maTBInput) maTBInput.value = dataStringArr.join(" | ");
 }
 
 // ==========================================
