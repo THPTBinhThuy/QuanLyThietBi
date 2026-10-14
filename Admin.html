@@ -14,7 +14,6 @@
 </head>
 <body style="background-color: #e9ecef;">
   <header class="school-header" style="background: linear-gradient(135deg, #343a40, #1d2124);">
-    <h1>TRƯỜNG THPT BÌNH THỦY</h1>
     <h2>BẢNG ĐIỀU KHIỂN QUẢN TRỊ VIÊN</h2>
     <p>Hệ thống Quản lý Thiết bị & Phòng học</p>
   </header>
@@ -32,7 +31,7 @@
 
   <main class="container" id="admin-panel">
     
-    <!-- Tab 1: Trang Chủ -->
+    <!-- Trang Chủ & Nhắc việc -->
     <div id="trang-chu" class="tab-content active">
       <div class="status-card" style="border-left: 5px solid #ffc107; margin-bottom: 20px; background-color: #fffbeb;">
         <h4 style="color: #d39e00;">🔔 TỔNG ĐÀI THÔNG BÁO & NHẮC VIỆC</h4>
@@ -54,13 +53,22 @@
       </div>
     </div>
 
-    <!-- Tab 2: Mượn TB -->
+    <!-- Mượn TB -->
     <div id="muon-tb" class="tab-content">
       <h3>ĐĂNG KÝ MƯỢN THIẾT BỊ DẠY HỌC</h3>
       <form id="formMuonTB" class="app-form">
         <label>Tên Giáo viên mượn:</label>
         <input type="text" id="gvThietBi" required placeholder="Họ và tên giáo viên">
         
+        <label>Chọn Phòng / Bộ môn chuyên môn:</label>
+        <select id="chonBoMon" onchange="locThietBiTheoPhong()" style="margin-bottom: 10px; padding: 10px; width: 100%; border-radius: 5px; border: 1px solid #ccc;">
+            <option value="">-- Tất cả các thiết bị --</option>
+            <option value="Vật Lý">Phòng / Môn Vật Lý</option>
+            <option value="Hóa Học">Phòng / Môn Hóa Học</option>
+            <option value="Sinh Học">Phòng / Môn Sinh Học</option>
+            <option value="Tin Học">Phòng / Môn Tin Học / Công Nghệ</option>
+        </select>
+
         <label>Tìm & Chọn Thiết bị và Số lượng:</label>
         <div style="display: flex; gap: 5px;">
             <input list="dataTB" id="inputTimTB" placeholder="Gõ tên hoặc mã TB..." style="flex: 2; margin-top: 0;">
@@ -87,7 +95,7 @@
       </form>
     </div>
 
-    <!-- Tab 3: Mượn Phòng -->
+    <!-- Mượn Phòng -->
     <div id="muon-phong" class="tab-content">
       <h3>ĐĂNG KÝ SỬ DỤNG PHÒNG BỘ MÔN</h3>
       <form id="formMuonPhong" class="app-form">
@@ -116,7 +124,7 @@
       </form>
     </div>
 
-    <!-- Tab 4: Báo Hỏng -->
+    <!-- Báo Hỏng -->
     <div id="bao-hong" class="tab-content">
       <h3>BÁO CÁO SỰ CỐ THIẾT BỊ / PHÒNG HỌC</h3>
       <form id="formBaoHong" class="app-form">
@@ -126,7 +134,7 @@
       </form>
     </div>
 
-    <!-- Tab 5: Mua Sắm -->
+    <!-- Mua Sắm -->
     <div id="mua-sam" class="tab-content">
       <h3>ĐỀ XUẤT MUA SẮM VẬT TƯ THIẾT BỊ</h3>
       <form id="formMuaSam" class="app-form">
@@ -137,7 +145,7 @@
       </form>
     </div>
 
-    <!-- TAB 6: DUYỆT MƯỢN THIẾT BỊ (CÓ LỌC THEO THÁNG) -->
+    <!-- Duyệt Mượn TB (Có lọc tháng) -->
     <div id="duyet-tb" class="tab-content">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3 style="color: #dc3545; margin: 0;">QUẢN LÝ & DUYỆT MƯỢN THIẾT BỊ</h3>
@@ -149,20 +157,14 @@
       <div class="table-container">
         <table class="data-table">
           <thead>
-            <tr>
-              <th>ID</th>
-              <th>Giáo Viên</th>
-              <th>Chi Tiết (Thiết Bị / Bài / Lớp / Ngày)</th>
-              <th>Trạng Thái</th>
-              <th>Thao Tác</th>
-            </tr>
+            <tr><th>ID</th><th>Giáo Viên</th><th>Chi Tiết</th><th>Trạng Thái</th><th>Thao Tác</th></tr>
           </thead>
           <tbody id="table-duyet-tb"></tbody>
         </table>
       </div>
     </div>
 
-    <!-- TAB 7: DUYỆT MƯỢN PHÒNG (CÓ LỌC THEO THÁNG) -->
+    <!-- Duyệt Mượn Phòng (Có lọc tháng) -->
     <div id="duyet-phong" class="tab-content">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3 style="color: #0056b3; margin: 0;">QUẢN LÝ & DUYỆT ĐẶT PHÒNG BỘ MÔN</h3>
@@ -174,20 +176,14 @@
       <div class="table-container">
         <table class="data-table">
           <thead>
-            <tr>
-              <th>ID</th>
-              <th>Giáo Viên</th>
-              <th>Chi Tiết (Phòng / Bài / Lớp / Ngày / Tiết)</th>
-              <th>Trạng Thái</th>
-              <th>Thao Tác</th>
-            </tr>
+            <tr><th>ID</th><th>Giáo Viên</th><th>Chi Tiết</th><th>Trạng Thái</th><th>Thao Tác</th></tr>
           </thead>
           <tbody id="table-duyet-phong"></tbody>
         </table>
       </div>
     </div>
 
-    <!-- Tab 8: Quản lý kho -->
+    <!-- Mở CSDL -->
     <div id="quan-ly-kho" class="tab-content">
       <h3>QUẢN LÝ DỮ LIỆU GỐC (GOOGLE SHEETS)</h3>
       <button class="btn-orange" style="width: auto; padding: 12px 25px;" onclick="moTrangTinh()">Mở CSDL Google Sheets</button>
