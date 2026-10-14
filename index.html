@@ -3,26 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hệ thống Quản lý Thiết bị - THPT Bình Thủy</title>
+  <title>Hệ thống Quản lý Thiết bị & Phòng học - THPT Bình Thủy</title>
   <link rel="stylesheet" href="style.css">
   <style>
-  /* Ép khung chọn ngày hiển thị chuẩn Việt Nam (dd/mm/yyyy) trên Chrome/Edge */
-  input[type="date"] {
-    position: relative;
-  }
-  input[type="date"]::-webkit-calendar-picker-indicator {
-    background: transparent;
-    bottom: 0; color: transparent;
-    cursor: pointer;
-    height: auto;left: 0;
-    position: absolute; right: 0; top: 0; width: auto;
-  }
-</style>
+    input[type="date"] { position: relative; }
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      background: transparent; bottom: 0; color: transparent; cursor: pointer; height: auto; left: 0; position: absolute; right: 0; top: 0; width: auto;
+    }
+  </style>
 </head>
 <body>
   <header class="school-header">
-    <h1>TRƯỜNG THPT BÌNH THỦY</h1>
-    <p>Cổng Đăng Ký Thiết bị & Phòng học Bộ môn dành cho Giáo viên</p>
+    <h2>TRƯỜNG THPT BÌNH THỦY</h2>
+    <p>Cổng Đăng Ký Thiết Bị & Phòng học Bộ môn dành cho Giáo viên</p>
   </header>
 
   <nav class="tab-navigation">
@@ -35,6 +28,8 @@
   </nav>
 
   <main class="container">
+    
+    <!-- Trang Chủ -->
     <div id="trang-chu" class="tab-content active">
       <div class="dashboard-row">
         <div class="status-card">
@@ -44,24 +39,35 @@
         <div class="status-card">
           <h4>Danh Mục Thiết Bị Nổi Bật</h4>
           <ul id="danh-sach-tb"><li>Đang đồng bộ dữ liệu...</li></ul>
-          <button class="btn-outline" onclick="taiDanhMucThietBi()">📥 Tải danh mục thiết bị (.xlsx)</button>
+          <div style="display: flex; gap: 10px; margin-top: 15px;">
+              <button class="btn-outline" style="flex: 1; margin-top: 0;" onclick="taiDanhMucThietBi()">📥 Tải file .xlsx</button>
+              <button class="btn-orange" style="flex: 1; margin-top: 0;" onclick="moTrangTinh()">⚙️ Mở CSDL Gốc</button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Tab 2: Mượn TB NÂNG CẤP BỔ SUNG NGÀY TRẢ & BÀI HỌC -->
+    <!-- Mượn Thiết Bị (Có phân loại phòng & nhập số lượng) -->
     <div id="muon-tb" class="tab-content">
       <h3>ĐĂNG KÝ MƯỢN THIẾT BỊ DẠY HỌC</h3>
       <form id="formMuonTB" class="app-form">
         <label>Tên Giáo viên mượn:</label>
         <input type="text" id="gvThietBi" required placeholder="Họ và tên giáo viên">
         
+        <label>Chọn Phòng / Bộ môn chuyên môn:</label>
+        <select id="chonBoMon" onchange="locThietBiTheoPhong()" style="margin-bottom: 10px; padding: 10px; width: 100%; border-radius: 5px; border: 1px solid #ccc;">
+            <option value="">-- Tất cả các thiết bị --</option>
+            <option value="Vật Lý">Phòng / Môn Vật Lý / Công Nghệ </option>
+            <option value="Hóa Học">Phòng / Môn Hóa Học</option>
+            <option value="Sinh Học">Phòng / Môn Sinh Học</option>
+            <option value="Ngoại Ngữ">Phòng / Môn Ngoại Ngữ </option>
+        </select>
+
         <label>Tìm & Chọn Thiết bị và Số lượng:</label>
         <div style="display: flex; gap: 5px;">
             <input list="dataTB" id="inputTimTB" placeholder="Gõ tên hoặc mã TB..." style="flex: 2; margin-top: 0;">
             <datalist id="dataTB"></datalist>
-            <!-- Ô nhập số lượng -->
-            <input type="number" id="inputSoLuongTB" value="1" min="1" max="100" style="flex: 1; margin-top: 0; text-align: center;" title="Số lượng mượn">
+            <input type="number" id="inputSoLuongTB" value="1" min="1" max="100" style="flex: 1; margin-top: 0; text-align: center;" title="Số lượng">
             <button type="button" class="btn-outline" style="margin-top: 0; padding: 12px; width: 70px;" onclick="themThietBiVaoDanhSach()">Thêm</button>
         </div>
         <div id="boxDanhSachTB" style="background: #f8f9fa; border: 1px solid #ccc; padding: 10px; min-height: 45px; margin-top: 10px; border-radius: 6px;">
@@ -71,23 +77,20 @@
         
         <label>Bài học / Nội dung thực hành:</label>
         <input type="text" id="baiHocTB" required placeholder="Ví dụ: Bài 12 - Lực ma sát">
+        
         <label>Lớp dạy:</label>
         <input type="text" id="lopDayTB" required placeholder="Ví dụ: 10A1, 10A2">
-   <div style="display: flex; gap: 10px;">
-      <div style="flex: 1;">
-        <label>Ngày mượn:</label>
-        <input type="date" id="ngayMuonTB" required data-date-format="DD/MM/YYYY">
-    </div>
-    <div style="flex: 1;">
-        <label>Ngày trả (Dự kiến):</label>
-        <input type="date" id="ngayTraTB" required data-date-format="DD/MM/YYYY">
-    </div>
-    </div>
+        
+        <div style="display: flex; gap: 10px;">
+            <div style="flex: 1;"><label>Ngày mượn:</label><input type="date" id="ngayMuonTB" required></div>
+            <div style="flex: 1;"><label>Ngày trả (Dự kiến):</label><input type="date" id="ngayTraTB" required></div>
+        </div>
+        
         <button type="button" onclick="guiYeuCau('muonThietBi')">Xác Nhận Mượn</button>
       </form>
     </div>
 
-    <!-- Tab 3: Mượn Phòng NÂNG CẤP BỔ SUNG BÀI DẠY -->
+    <!-- Mượn Phòng -->
     <div id="muon-phong" class="tab-content">
       <h3>ĐĂNG KÝ SỬ DỤNG PHÒNG BỘ MÔN</h3>
       <form id="formMuonPhong" class="app-form">
@@ -99,12 +102,12 @@
         
         <label>Bài dạy / Nội dung thực hành:</label>
         <input type="text" id="baiDayPhong" required placeholder="Ví dụ: Thực hành Hóa học 10">
-
+        
         <label>Lớp dạy:</label>
         <input type="text" id="lopDayPhong" required placeholder="Ví dụ: 11A2">
-
+        
         <label>Ngày đăng ký dùng:</label>
-        <input type="date" id="ngayDatPhong" required data-date-format="DD/MM/YYYY">
+        <input type="date" id="ngayDatPhong" required>
         
         <label>Buổi học:</label>
         <select id="buoiHoc"><option value="Sáng">Buổi Sáng</option><option value="Chiều">Buổi Chiều</option></select>
@@ -115,16 +118,13 @@
         <button type="button" class="btn-orange" onclick="guiYeuCau('datPhong')">Xác Nhận Đặt Phòng</button>
       </form>
     </div>
-    
-    <!-- Tab 4: Báo Hỏng NÂNG CẤP -->
+
+    <!-- Báo Hỏng -->
     <div id="bao-hong" class="tab-content">
       <h3>BÁO CÁO SỰ CỐ THIẾT BỊ / PHÒNG HỌC</h3>
       <form id="formBaoHong" class="app-form">
-        <label>Vị trí / Mã thiết bị hỏng (Có thể ghi nhiều):</label>
-        <textarea id="viTriSuCo" required placeholder="Ghi mỗi thiết bị một dòng...&#10;Ví dụ:&#10;- Máy tính số 12&#10;- Kính hiển vi bàn 3" rows="3"></textarea>
-        <label>Chi tiết tình trạng lỗi (Tương ứng):</label>
-        <textarea id="moTaSuCo" required placeholder="- Máy 12: Không lên nguồn&#10;- Kính hiển vi: Bể ống kính" rows="3"></textarea>
-        
+        <textarea id="viTriSuCo" required placeholder="Vị trí / Mã thiết bị..." rows="3"></textarea>
+        <textarea id="moTaSuCo" required placeholder="Chi tiết lỗi..." rows="3"></textarea>
         <div style="display: flex; gap: 10px;">
             <button type="button" class="btn-red" style="flex: 1;" onclick="guiYeuCau('baoHong')">Gửi Lên Hệ Thống</button>
             <button type="button" style="flex: 1; background-color: #17a2b8;" onclick="xuatFileWord('baoHong')">📄 Xuất & In Phiếu</button>
@@ -132,18 +132,13 @@
       </form>
     </div>
 
-    <!-- Tab 5: Mua Sắm NÂNG CẤP -->
+    <!-- Mua Sắm -->
     <div id="mua-sam" class="tab-content">
       <h3>ĐỀ XUẤT MUA SẮM VẬT TƯ THIẾT BỊ</h3>
       <form id="formMuaSam" class="app-form">
-        <label>Danh sách thiết bị đề xuất mua (Kèm số lượng):</label>
-        <textarea id="tenTBMuaSam" required placeholder="Có thể đề xuất nhiều món cùng lúc:&#10;1. Hóa chất NaCl - 2 lọ&#10;2. Ống nghiệm - 10 cái" rows="4"></textarea>
-        
-        <input type="hidden" id="soLuongMuaSam" value="Nhiều món (Đã xem chi tiết)">
-        
-        <label>Lý do mua sắm chung:</label>
-        <textarea id="lyDoMuaSam" required placeholder="Phục vụ bài thực hành nào, khối mấy..." rows="2"></textarea>
-        
+        <textarea id="tenTBMuaSam" required placeholder="Danh sách đề xuất..." rows="4"></textarea>
+        <input type="hidden" id="soLuongMuaSam" value="Nhiều món">
+        <textarea id="lyDoMuaSam" required placeholder="Lý do mua sắm..." rows="2"></textarea>
         <div style="display: flex; gap: 10px;">
             <button type="button" class="btn-green" style="flex: 1;" onclick="guiYeuCau('muaSam')">Gửi Lên Hệ Thống</button>
             <button type="button" style="flex: 1; background-color: #17a2b8;" onclick="xuatFileWord('muaSam')">📄 Xuất & In Phiếu</button>
@@ -151,13 +146,15 @@
       </form>
     </div>
 
-    <!-- Tab 6: Kết quả GV -->
+    <!-- Lịch sử cá nhân -->
     <div id="ket-qua-gv" class="tab-content">
-      <h3>TIẾN ĐỘ PHÊ DUYỆT YÊU CẦU</h3>
+      <h3>LỊCH SỬ ĐĂNG KÝ CỦA TÔI</h3>
       <div class="table-container">
         <table class="data-table">
-          <thead><tr><th>Thời gian gửi</th><th>Giáo Viên</th><th>Nội Dung</th><th>Chi Tiết</th><th>Trạng Thái</th></tr></thead>
-          <tbody id="table-ket-qua-gv"></tbody>
+          <thead>
+            <tr><th>Thời gian</th><th>Giáo Viên</th><th>Loại Yêu Cầu</th><th>Chi Tiết</th><th>Trạng Thái</th></tr>
+          </thead>
+          <tbody id="table-ket-qua-gv"><tr><td colspan='5' style='text-align:center;'>Đang tải dữ liệu...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -165,7 +162,7 @@
 
   <footer class="app-footer">
     <div id="real-time-clock">Đang tải thời gian...</div>
-    <p>Cần hỗ trợ? Vui lòng liên hệ Quản lý thiết bị: <strong>Nguyễn Hoàng Sang</strong> - Zalo: 0968.671.706</p>
+    <p>Hệ thống hỗ trợ giáo viên THPT Bình Thủy.</p>
   </footer>
   <script src="script.js"></script>
 </body>
